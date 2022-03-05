@@ -15,6 +15,8 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98 -o
 NAME = ex00
 FILES = main.cpp\
 	Socket.cpp\
+	ListeningSocket.cpp\
+	ConnectingSocket.cpp\
 	BindingSocket.cpp
 
 all : $(NAME)

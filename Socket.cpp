@@ -1,6 +1,6 @@
 #include "Socket.hpp"
 
-Socket::Socket(int domain, int service, int port, int protocol, unsigned long inter)
+Socket::Socket(int domain, int service,int protocol, int port, unsigned long inter)
 {
 	//initialize struct
 	addr.sin_family = domain;

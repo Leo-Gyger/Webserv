@@ -5,7 +5,7 @@
 
 class ConnectingSocket : public Socket
 {
-	ConnectingSocket(int dom, int serv, int prot, unsigned long inter);
+	ConnectingSocket(int dom, int serv, int prot, int port, unsigned long inter);
 	int	net_connect(int fd, struct sockaddr_in addr);
 };
 #endif
