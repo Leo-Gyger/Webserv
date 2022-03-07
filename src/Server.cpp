@@ -1,5 +1,5 @@
 #include "../includes/Server.hpp"
-
+#include <fcntl.h>
 Server::Server(Socket&	s): s(s)
 {
 	this->s = s;
@@ -7,11 +7,12 @@ Server::Server(Socket&	s): s(s)
 	return;
 }
 
-void	Server::launch(std::string msg[2])
+void	Server::launch(std::string msg)
 {
-	int	i, a;
-	i = 1;
+	int	i,a;
+	i = 0;
 	a = 0;
+	std::string te;
 	while (1)
 	{
 		char buf[30000] = {0};
@@ -22,10 +23,12 @@ void	Server::launch(std::string msg[2])
 			std::cout << "finished" << std::endl;
 			break;
 		}
-		std::cout << std::endl << std::string(buf) << std::endl;
-		write(this->fd, msg[a].c_str(), msg[a].size());
-		close(this->fd);
+		i = 0;
+		te = buf;
+		std::cout << std::endl << te << std::endl;
+		send(this->fd, msg.c_str(), msg.size(), 0);
 		a++;
+		close(this->fd);
 	}
 }
 
