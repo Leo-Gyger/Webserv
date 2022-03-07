@@ -21,6 +21,8 @@ class	Socket
 		void	binding(void);
 		void	listening(int bl);
 		void	communicate(std::string msg);
+
+private:
+  int port;
 };
 #endif
-

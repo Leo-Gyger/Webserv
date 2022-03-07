@@ -5,11 +5,13 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <iostream>
-#include "Server.hpp"
+#include <Server.hpp>
+#include <constants.h>
+
 int main(void)
 {
 	std::string	hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-	Socket a(8080); 
+	Socket a(PORT);
 	a.binding();
 	a.listening(10);
 	Server	e(a);

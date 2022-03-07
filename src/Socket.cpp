@@ -1,6 +1,6 @@
-#include "Socket.hpp"
+#include "../includes/Socket.hpp"
 
-Socket::Socket(int port)
+Socket::Socket(int port) : port(port)
 {
 	std::cout << "Socket constructor" << std::endl;
 	memset(&this->address, 0, sizeof(this->address));
@@ -9,17 +9,19 @@ Socket::Socket(int port)
 	this->address.sin_addr.s_addr = INADDR_ANY;
 	this->address.sin_port = htons(port);
 	this->addrlen = sizeof(address);
-	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);	
+	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	return;
 }
-void	Socket::binding(void)
+
+void Socket::binding(void)
 {
-	bind(this->server_fd, (struct  sockaddr *)&address, sizeof(address));
+	bind(this->server_fd, (struct sockaddr *) &address, sizeof(address));
 }
 
-void	Socket::listening(int	bl)
+void Socket::listening(int bl)
 {
 	listen(this->server_fd, bl);
+	std::cout << "Server is listening on port " << this->port << std::endl;
 }
 
 Socket::~Socket(void)
@@ -27,4 +29,3 @@ Socket::~Socket(void)
 	std::cout << "destructed" << std::endl;
 	return;
 }
-

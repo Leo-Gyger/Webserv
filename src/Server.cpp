@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../includes/Server.hpp"
 
 Server::Server(Socket&	s): s(s)
 {
@@ -25,4 +25,3 @@ Server::~Server(void)
 	std::cout << "destructed" << std::endl;
 	return;
 }
-
