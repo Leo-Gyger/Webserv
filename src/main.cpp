@@ -10,7 +10,7 @@
 
 int main(void)
 {
-	std::string	hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+	std::string	hello[] = {"HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 20\n\nHello world I'm Leo!", "HTTP/1.1 404 Not Found\n"};
 	Socket a(PORT);
 	a.binding();
 	a.listening(10);

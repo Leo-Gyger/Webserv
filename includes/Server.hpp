@@ -12,7 +12,7 @@ class	Server
 	public:
 		Server(class Socket&	s);
 		~Server(void);
-		void	launch(std::string msg);
+		void	launch(std::string msg[2]);
 };
 #endif
 
