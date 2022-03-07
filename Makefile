@@ -14,9 +14,9 @@ SHELL = /bin/sh
 
 CXXFLAGS := ${CFLAGS}
 
-CXX     ?= c++
+CXX ?= c++
 
-INC_FLAGS := -Ilibs/libft/incs
+INC_FLAGS :=
 LDFLAGS :=
 
 UNAME = $(shell uname -s)
@@ -41,7 +41,7 @@ OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 INC_DIRS := $(shell find $(INCLUDE_DIR) -type d)
 INC_FLAGS += $(addprefix -I,$(INC_DIRS))
 
-CXXFLAGS += -Wall -Wextra -Werror
+CXXFLAGS += -Wall -Wextra -Werror -Wshadow
 CXXFLAGS += -std=c++98 -pedantic
 CXXFLAGS += -O3 -march=native
 CXXFLAGS += -g3
@@ -52,12 +52,12 @@ all:
 
 $(NAME): $(OBJS)
 	@echo Linking $@
-	@$(CXX) $(CFLAGS) $(INC_FLAGS) $(OBJS) $(LDFLAGS) -o $(NAME)
+	@$(CXX) $(CXXFLAGS) $(INC_FLAGS) $(OBJS) $(LDFLAGS) -o $(NAME)
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	@echo Compiling $@
 	@mkdir -p $(dir $@)
-	@$(CXX) -c  $(CFLAGS) $(INC_FLAGS) $< -o $@
+	@$(CXX) -c  $(CXXFLAGS) $(INC_FLAGS) $< -o $@
 
 clean:
 	@rm -rf $(BUILD_DIR)
