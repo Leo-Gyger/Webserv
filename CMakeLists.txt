@@ -10,6 +10,6 @@ set(EXEC webserv)
 
 include_directories(includes)
 
-file(GLOB SOURCES src/*.cpp)
+file(GLOB SOURCES src/**/*.cpp)
 
 add_executable(${EXEC} ${SOURCES})
