@@ -13,7 +13,9 @@ CC = c++
 
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -o
 NAME = WebServ
-FILES = main.cpp
+FILES = main.cpp\
+	Socket.cpp\
+	Server.cpp\
 
 all : $(NAME)
 OBJ = $(FILES:%.cpp=%.o)
