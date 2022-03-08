@@ -1,10 +1,8 @@
 #include "../includes/Server.hpp"
 
-Server::Server(Socket &s) : s(s)
+Server::Server(): port(80)
 {
-	this->s = s;
 	std::cout << "Server constructor" << std::endl;
-	return;
 }
 
 void Server::launch(std::string msg)
@@ -12,7 +10,7 @@ void Server::launch(std::string msg)
 	while (1)
 	{
 		char buf[30000] = {0};
-		this->fd = accept(s.server_fd, (struct sockaddr *) &s.address,
+		this->fd = accept(s.getServerFd(), (struct sockaddr *) &s.address,
 						  (socklen_t *) &s.addrlen);
 		read(this->fd, buf, 30000);
 		std::cout << std::endl << std::string(buf) << std::endl;
@@ -21,17 +19,31 @@ void Server::launch(std::string msg)
 	}
 }
 
-Server::~Server(void)
+Server::~Server()
 {
 	std::cout << "destructed" << std::endl;
-	return;
 }
 
-Server::Server(const Server &s) : s(s.s) {}
+Server::Server(const Server &server) {
+	*this = server;
+}
 
-Server &Server::operator=(const Server &obj)
+Server &Server::operator=(const Server &server)
 {
-	this->s = obj.s;
-	this->fd = obj.fd;
+	this->port = server.port;
+
 	return (*this);
+}
+
+void Server::setPort(int p) {
+	this->port = p;
+}
+int Server::getPort() const {
+	return (this->port);
+}
+void Server::setSocket(Socket socket) {
+	this->s = socket;
+}
+Socket Server::getSocket() const {
+	return (this->s);
 }

@@ -12,17 +12,31 @@
 class Socket
 {
 public:
-	int server_fd;
-	int response_fd;
-	struct sockaddr_in address;
-	unsigned int addrlen;
-	Socket(int port);
-	~Socket(void);
-	void binding(void);
+	Socket();
+
+	~Socket();
+
+	Socket &operator=(const Socket &obj);
+
+	void binding();
+
 	void listening(int bl);
+
 	void communicate(std::string msg);
 
+	void setPort(int p);
+	int getPort() const;
+
+	void setServerFd(int s);
+	int getServerFd() const;
+
+
+	struct sockaddr_in address;
+	unsigned int addrlen;
 private:
 	int port;
+	int server_fd;
+	int response_fd;
 };
+
 #endif

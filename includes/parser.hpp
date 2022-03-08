@@ -6,8 +6,8 @@
 # define WEBSERV_PARSER_HPP
 
 #include <iostream>
+#include <vector>
 
-void parse_config_file(const std::string &filename);
-
+std::vector<Server> parse_config_file(const char *filename);
 
 #endif //WEBSERV_PARSER_HPP
