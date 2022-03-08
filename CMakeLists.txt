@@ -12,4 +12,6 @@ include_directories(includes)
 
 file(GLOB SOURCES src/**/*.cpp)
 
+message(SOURCES="${SOURCES}")
+
 add_executable(${EXEC} ${SOURCES})

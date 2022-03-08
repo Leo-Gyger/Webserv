@@ -1,18 +1,22 @@
 #ifndef SERVER_HPP
-# define SERVER_HPP
+#define SERVER_HPP
 
-#include <iostream>
 #include "Socket.hpp"
+#include <iostream>
 
-class	Server
+class Server
 {
-	private:
-		int	fd;
-		class Socket&	s;
-	public:
-		Server(class Socket&	s);
-		~Server(void);
-		void	launch(std::string msg);
-};
-#endif
+public:
+	Server(class Socket &s);
+	Server(const Server &s);
+	Server();
+	~Server();
+	Server &operator=(const Server &obj);
+	void launch(std::string msg);
 
+private:
+	int fd;
+	class Socket &s;
+};
+
+#endif
