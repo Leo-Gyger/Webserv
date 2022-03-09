@@ -2,8 +2,9 @@
 # define SERVER_HPP
 
 #include <iostream>
+#include <fstream>
 #include "Socket.hpp"
-
+#include "Response.hpp"
 class	Server
 {
 	private:
@@ -12,7 +13,7 @@ class	Server
 	public:
 		Server(class Socket&	s);
 		~Server(void);
-		void	launch(std::string msg);
+		void	launch(void);
 };
 #endif
 
