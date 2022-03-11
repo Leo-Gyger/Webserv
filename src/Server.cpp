@@ -34,11 +34,15 @@ void Server::launch(void)
 
 Server::~Server() { std::cout << "destructed" << std::endl; }
 
-void Server::setPort(int p) { this->port = p; }
-int Server::getPort() const { return (this->port); }
 void Server::createSocket()
 {
 	this->s = new Socket(this->port);
 	this->s->binding();
 	this->s->listening(10);
 }
+
+void Server::setPort(int p) { this->port = p; }
+int Server::getPort() const { return (this->port); }
+
+void Server::addRoute(const Routes& r) { routesList.push_back(r); }
+std::vector<Routes> Server::getRoutes() { return this->routesList; }
