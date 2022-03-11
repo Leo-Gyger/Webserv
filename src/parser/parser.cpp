@@ -32,7 +32,7 @@ std::string trim_left(std::string &line)
 	return (line);
 }
 
-int stoi(const std::string &s)
+int ft_stoi(const std::string &s)
 {
 	int i;
 	if (std::istringstream(s) >> i) return (i);
@@ -63,7 +63,7 @@ int parse_line(Server &sv, const std::string &filename, std::ifstream &file,
 	{
 		line.erase(0, 4);
 		trim_left(line);
-		sv.setPort(stoi(line));
+		sv.setPort(ft_stoi(line));
 		trim_left_number(line);
 		if (!line.empty()) parse_error(filename, file, i, "garbage at EOL");
 	} else
@@ -84,8 +84,7 @@ Server parse_server(const std::string &filename, std::ifstream &file,
 	trim_left(line);
 	if (!line.empty())
 	{
-		if (line.find('}') == 0)
-			return (sv);
+		if (line.find('}') == 0) return (sv);
 		else
 			parse_error(filename, file, i, "garbage at EOL");
 	}
