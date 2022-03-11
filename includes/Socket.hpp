@@ -1,28 +1,42 @@
 #ifndef SOCKET_HPP
-# define SOCKET_HPP
+#define SOCKET_HPP
 
 #include <iostream>
+#include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
 
-class	Socket
+class Socket
 {
-	public:
-		int	server_fd;
-		int	response_fd;
-		struct sockaddr_in address;
-		unsigned int	addrlen;
-		Socket(int port);
-		~Socket(void);
-		void	binding(void);
-		void	listening(int bl);
-		void	communicate(std::string msg);
+public:
+	Socket();
 
+	~Socket();
+
+	Socket &operator=(const Socket &obj);
+
+	void binding();
+
+	void listening(int bl);
+
+	void communicate(std::string msg);
+
+	void setPort(int p);
+	int getPort() const;
+
+	void setServerFd(int s);
+	int getServerFd() const;
+
+
+	struct sockaddr_in address;
+	unsigned int addrlen;
 private:
-  int port;
+	int port;
+	int server_fd;
+	int response_fd;
 };
+
 #endif

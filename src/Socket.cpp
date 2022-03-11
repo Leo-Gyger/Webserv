@@ -1,6 +1,6 @@
 #include "../includes/Socket.hpp"
 
-Socket::Socket(int port) : port(port)
+Socket::Socket()
 {
 	std::cout << "Socket constructor" << std::endl;
 	memset(&this->address, 0, sizeof(this->address));
@@ -19,7 +19,7 @@ Socket::Socket(int port) : port(port)
 	return;
 }
 
-void Socket::binding(void)
+void Socket::binding()
 {
 	if (bind(this->server_fd, (struct sockaddr *) &address, sizeof(address)) == -1)
 	{
@@ -34,8 +34,20 @@ void Socket::listening(int bl)
 	std::cout << "Server is listening on port " << this->port << std::endl;
 }
 
-Socket::~Socket(void)
+Socket::~Socket() { std::cout << "destructed" << std::endl; }
+
+Socket &Socket::operator=(const Socket &obj)
 {
-	std::cout << "destructed" << std::endl;
-	return;
+	this->address = obj.address;
+	this->server_fd = obj.server_fd;
+	this->response_fd = obj.response_fd;
+	this->port = obj.port;
+	this->addrlen = obj.addrlen;
+
+	return (*this);
 }
+
+void Socket::setPort(int p) { this->port = p; }
+int Socket::getPort() const { return (this->port); }
+void Socket::setServerFd(int s) { this->server_fd = s; }
+int Socket::getServerFd() const { return this->server_fd; }

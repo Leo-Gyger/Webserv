@@ -4,7 +4,6 @@
 Server::Server(Socket& s): s(s)
 {
 	std::cout << "Server constructor" << std::endl;
-	return;
 }
 
 void	Server::launch(void)
@@ -30,8 +29,31 @@ void	Server::launch(void)
 	}
 }
 
-Server::~Server(void)
+Server::~Server()
 {
 	std::cout << "destructed" << std::endl;
-	return;
+}
+
+Server::Server(const Server &server) {
+	*this = server;
+}
+
+Server &Server::operator=(const Server &server)
+{
+	this->port = server.port;
+
+	return (*this);
+}
+
+void Server::setPort(int p) {
+	this->port = p;
+}
+int Server::getPort() const {
+	return (this->port);
+}
+void Server::setSocket(Socket socket) {
+	this->s = socket;
+}
+Socket Server::getSocket() const {
+	return (this->s);
 }
