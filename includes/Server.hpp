@@ -10,13 +10,15 @@ class	Server
 	private:
   	int port;
 		int	fd;
-		class Socket&	s;
+		class Socket	*s;
 	public:
-		Server(class Socket&	s);
-		~Server(void);
-		void	launch(void);
-  	void setPort(int p);
-	  int getPort() const;
+		Server();
+		~Server();
+		void	launch();
+  		void setPort(int p);
+		void createSocket();
+
+		int	getPort() const;
 };
 
 #endif

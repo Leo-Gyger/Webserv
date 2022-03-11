@@ -1,6 +1,6 @@
 #include "../includes/Socket.hpp"
 
-Socket::Socket()
+Socket::Socket(int p): port(p)
 {
 	std::cout << "Socket constructor" << std::endl;
 	memset(&this->address, 0, sizeof(this->address));

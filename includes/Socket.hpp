@@ -12,7 +12,7 @@
 class Socket
 {
 public:
-	Socket();
+	Socket(int p);
 
 	~Socket();
 
