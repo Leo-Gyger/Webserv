@@ -6,7 +6,7 @@ Socket::Socket(int p): port(p)
 	memset(&this->address, 0, sizeof(this->address));
 	memset(&this->address.sin_zero, 0, sizeof(this->address.sin_zero));
 	this->address.sin_family = AF_INET;
-	this->address.sin_addr.s_addr = INADDR_ANY;
+	this->address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	this->address.sin_port = htons(port);
 	this->addrlen = sizeof(address);
 	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);

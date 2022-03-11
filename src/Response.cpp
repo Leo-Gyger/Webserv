@@ -22,16 +22,19 @@ std::string	Response::answer(std::string& msg)
 bool	Response::is_valid(std::string demande)
 {
 	std::istringstream s(demande);
-	std::ifstream	file;
 	std::streampos	size;
 	std::string	name;
+	std::string localisation = "WWW/";
 
 	std::getline(s,name, ' ');
 	std::getline(s,name, ' ');
+	if (name == "/")
+		name = "/info.html";
 	name = name.substr(1);
+	name =  localisation + name;
 	std::cout << name << std::endl;
-	file.open(name, std::ios::binary);
-	if (!file.is_open())
+	std::ifstream file(name);
+	if (!file)
 		return false;
 	file.seekg(0, std::ios::end);
 	size = file.tellg();

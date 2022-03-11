@@ -20,7 +20,11 @@ void Server::launch(void)
 			close(this->fd);
 			exit(1);
 		}
-		recv(this->fd, buf, 30000, 0);
+		if (recv(this->fd, buf, 30000, 0) == 0)
+		{
+			close(this->fd);
+			exit(1);
+		}
 		te = buf;
 		std::cout << te << std::endl;
 		ans = r.answer(te);
@@ -32,7 +36,10 @@ void Server::launch(void)
 	}
 }
 
-Server::~Server() { std::cout << "destructed" << std::endl; }
+Server::~Server()
+{
+	std::cout << "destructed" << std::endl;
+}
 
 void Server::setPort(int p) { this->port = p; }
 int Server::getPort() const { return (this->port); }
