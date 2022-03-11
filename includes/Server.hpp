@@ -1,24 +1,34 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <iostream>
-#include <fstream>
-#include "Socket.hpp"
 #include "Response.hpp"
-class	Server
-{
-	private:
-  	int port;
-		int	fd;
-		class Socket	*s;
-	public:
-		Server();
-		~Server();
-		void	launch();
-  		void setPort(int p);
-		void createSocket();
+#include "Routes.hpp"
+#include "Socket.hpp"
+#include <fstream>
+#include <iostream>
+#include <vector>
 
-		int	getPort() const;
+class Server
+{
+public:
+	Server();
+	~Server();
+
+	void launch();
+
+	void createSocket();
+
+	void setPort(int p);
+	int getPort() const;
+
+	void addRoute(const Routes& r);
+	std::vector<Routes>	getRoutes();
+
+private:
+	int port;
+	int fd;
+	class Socket *s;
+	std::vector<Routes> routesList;
 };
 
 #endif

@@ -2,70 +2,47 @@
 // Created by Mano Segransan on 3/7/22.
 //
 
+#include "parser_utils.hpp"
 #include <Server.hpp>
 #include <algorithm>
 #include <colours.hpp>
-#include <fstream>
 #include <parser.hpp>
-#include <sstream>
 #include <vector>
 
-bool isnotspace(int i) { return !std::isspace(i); }
-
-
-bool isnotdigit(int i) { return !std::isdigit(i); }
-
-std::string remove_comments(std::string &line)
+int parse_route_line(Routes &r, t_file &f)
 {
-	size_t i;
-
-	i = line.find('#');
-	if (i != std::string::npos) line.erase(i);
-
-	return (line);
-}
-
-std::string trim_left(std::string &line)
-{
-	line.erase(line.begin(),
-			   std::find_if(line.begin(), line.end(), isnotspace));
-	return (line);
-}
-
-int ft_stoi(const std::string &s)
-{
-	int i;
-	if (std::istringstream(s) >> i) return (i);
-	return (-1);
-}
-
-void parse_error(const std::string &filename, std::ifstream &file, size_t &i,
-				 const std::string &error)
-{
-	file.close();
-	std::cerr << BOLD << filename << ":" << i << RED << " error: " << RESET
-			  << BOLD << error << RESET << std::endl;
-	exit(EXIT_FAILURE);
-}
-
-std::string trim_left_number(std::string &line)
-{
-	line.erase(line.begin(),
-			   std::find_if(line.begin(), line.end(), isnotdigit));
-	return (line);
-}
-
-int parse_line(Server &sv, const std::string &filename, std::ifstream &file,
-			   std::string &line, size_t &i)
-{
-	if (line.find('}') == 0) return (1);
-	if (line.find("port") == 0)
+	if (f.line.find('}') == 0) return (1);
+	if (f.line.find("path") == 0)
 	{
-		line.erase(0, 4);
-		trim_left(line);
-		sv.setPort(ft_stoi(line));
-		trim_left_number(line);
-		if (!line.empty()) parse_error(filename, file, i, "garbage at EOL");
+		f.line.erase(0, 4);
+		trim_left(f.line);
+		r.setPath(f.line);
+	} else if (f.line.find("url") == 0)
+	{
+		f.line.erase(0, 3);
+		trim_left(f.line);
+		r.setUrl(f.line);
+	} else if (f.line.find("methods") == 0)
+	{
+		f.line.erase(0, 7);
+		trim_left(f.line);
+		std::string token;
+		size_t pos;
+		while (!f.line.empty())
+		{
+			pos = f.line.find(',');
+			token = f.line.substr(0, pos);
+			if (token == "GET") r.addMethods(GET);
+			else if (token == "POST")
+				r.addMethods(POST);
+			else if (token == "DELETE")
+				r.addMethods(DELETE);
+			else
+				parse_error(f, "unrecognized token: " + token);
+			f.line.erase(0, pos + 1);
+			if (pos == std::string::npos)
+				break ;
+		}
 	} else
 	{
 		std::cerr << BOLD
@@ -76,80 +53,113 @@ int parse_line(Server &sv, const std::string &filename, std::ifstream &file,
 	return (0);
 }
 
-Server parse_server(const std::string &filename, std::ifstream &file,
-					std::string &line, size_t &i)
+Routes parse_route(t_file &f)
+{
+	Routes r;
+
+	if (!f.line.empty())
+	{
+		if (f.line.find('}') == 0) return (r);
+		else
+			parse_error(f, "garbage at EOL");
+	}
+	while (f.file->good() && !f.file->eof())
+	{
+		++(f.i);
+		std::getline(*f.file, f.line);
+		remove_comments(f.line);
+		trim_left(f.line);
+		if (!f.line.empty())
+			if (parse_route_line(r, f)) return (r);
+	}
+	parse_error(f, "missing `}` before EOF");
+	return (r);
+}
+
+int parse_line(Server &sv, t_file &f)
+{
+	if (f.line.find('}') == 0) return (1);
+	if (f.line.find("port") == 0)
+	{
+		f.line.erase(0, 4);
+		trim_left(f.line);
+		sv.setPort(ft_stoi(f.line));
+		trim_left_number(f.line);
+		if (!f.line.empty()) parse_error(f, "garbage at EOL");
+	} else if (f.line.find("route") == 0)
+	{
+		f.line.erase(0, 5);
+		trim_left(f.line);
+		if (f.line.empty())
+			if (skip_lines(f)) parse_error(f, "unexpected EOF");
+		if (f.line.find('{') != 0) parse_error(f, "unrecognized token");
+		f.line.erase(0, 1);
+		trim_left(f.line);
+		sv.addRoute(parse_route(f));
+	} else
+	{
+		std::cerr << BOLD
+				  << "NOT IMPLEMENTED: UNRECOGNIZED TOKEN IN SERVER DIRECTIVE"
+				  << RESET << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	return (0);
+}
+
+Server parse_server(t_file &f)
 {
 	Server sv;
 
-	trim_left(line);
-	if (!line.empty())
+	if (!f.line.empty())
 	{
-		if (line.find('}') == 0) return (sv);
+		if (f.line.find('}') == 0) return (sv);
 		else
-			parse_error(filename, file, i, "garbage at EOL");
+			parse_error(f, "garbage at EOL");
 	}
-	while (file.good() && !file.eof())
+	while (f.file->good() && !f.file->eof())
 	{
-		++i;
-		std::getline(file, line);
-		remove_comments(line);
-		trim_left(line);
-		if (!line.empty())
-			if (parse_line(sv, filename, file, line, i)) return (sv);
+		++(f.i);
+		std::getline(*f.file, f.line);
+		remove_comments(f.line);
+		trim_left(f.line);
+		if (!f.line.empty())
+			if (parse_line(sv, f)) return (sv);
 	}
-	parse_error(filename, file, i, "missing `}` before EOF");
+	parse_error(f, "missing `}` before EOF");
 	return (sv);
 }
 
-int skip_lines(std::ifstream &file, std::string &line, size_t &i)
+int get_server_directive(t_file &f)
 {
-	while (file.good() && !file.eof())
-	{
-		++i;
-		std::getline(file, line);
-		remove_comments(line);
-		trim_left(line);
-		if (!line.empty()) return (0);
-	}
-	return (1);
-}
-
-int get_server_directive(const std::string &filename, std::ifstream &file,
-						 std::string &line, size_t &i)
-{
-	if (skip_lines(file, line, i)) { return (1); }
-	if (line.find("server") != 0)
-		parse_error(filename, file, i, "unrecognized token");
-	line.erase(0, 6);
-	trim_left(line);
-	if (line.empty())
-	{
-		if (skip_lines(file, line, i))
-			parse_error(filename, file, i, "unexpected EOF");
-	}
-	if (line.find('{') != 0)
-		parse_error(filename, file, i, "unrecognized token");
-	line.erase(0, 1);
-	trim_left(line);
-	//	if (!line.empty())
-	//		parse_error(filename, file, i, "garbage at EOL");
+	if (skip_lines(f)) { return (1); }
+	if (f.line.find("server") != 0) parse_error(f, "unrecognized token");
+	f.line.erase(0, 6);
+	trim_left(f.line);
+	if (f.line.empty())
+		if (skip_lines(f)) parse_error(f, "unexpected EOF");
+	if (f.line.find('{') != 0) parse_error(f, "unrecognized token");
+	f.line.erase(0, 1);
+	trim_left(f.line);
 	return (0);
 }
 
 std::vector<Server> parse_config_file(const char *filename)
 {
-	size_t i = 0;
-	std::string line;
+	t_file f;
 	std::ifstream file(filename);
+	f.filename = filename;
+	f.file = &file;
+	f.i = 0;
+	f.j = 0;
+
 	std::vector<Server> serverList;
 
-	if (!file.is_open()) exit(EXIT_FAILURE);
+	if (!f.file->is_open()) exit(EXIT_FAILURE);
 
-	if (get_server_directive(filename, file, line, i))
-		parse_error(filename, file, i, "could not find server directive");
-	serverList.push_back(parse_server(filename, file, line, i));
-	while (!get_server_directive(filename, file, line, i))
-		serverList.push_back(parse_server(filename, file, line, i));
-	file.close();
+	if (get_server_directive(f))
+		parse_error(f, "could not find server directive");
+	serverList.push_back(parse_server(f));
+	while (!get_server_directive(f)) serverList.push_back(parse_server(f));
+	f.file->close();
 	return (serverList);
 }
