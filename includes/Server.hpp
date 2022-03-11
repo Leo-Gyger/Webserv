@@ -1,29 +1,22 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "Socket.hpp"
 #include <iostream>
-
-class Server
+#include <fstream>
+#include "Socket.hpp"
+#include "Response.hpp"
+class	Server
 {
-public:
-	Server();
-	Server(const Server &s);
-	~Server();
-	Server &operator=(const Server &obj);
-
-	void setPort(int p);
-	void setSocket(Socket socket);
-	int getPort() const;
-	Socket getSocket() const;
-
-
-	void launch(std::string msg);
-
-private:
-	int port;
-	int fd;
-	Socket s;
+	private:
+  	int port;
+		int	fd;
+		class Socket&	s;
+	public:
+		Server(class Socket&	s);
+		~Server(void);
+		void	launch(void);
+  	void setPort(int p);
+	  int getPort() const;
 };
 
 #endif

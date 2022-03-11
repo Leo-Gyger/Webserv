@@ -10,11 +10,22 @@ Socket::Socket()
 	this->address.sin_port = htons(port);
 	this->addrlen = sizeof(address);
 	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (this->server_fd == -1)
+	{
+		std::cerr << "Error creating the socket" << std::endl;
+		exit (1);
+	}
+
+	return;
 }
 
 void Socket::binding()
 {
-	bind(this->server_fd, (struct sockaddr *) &address, sizeof(address));
+	if (bind(this->server_fd, (struct sockaddr *) &address, sizeof(address)) == -1)
+	{
+		std::cerr << "Error binding the socket" << std::endl;
+		exit(1);
+	}
 }
 
 void Socket::listening(int bl)
