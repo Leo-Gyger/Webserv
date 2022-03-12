@@ -18,13 +18,13 @@ typedef struct s_file {
 
 int skip_lines(t_file &f);
 
-std::string trim_left(std::string &line);
+size_t trim_left(std::string &line);
 
 int ft_stoi(const std::string &s);
 
 void parse_error(t_file &f, const std::string &error);
 
-std::string trim_left_number(std::string &line);
+size_t trim_left_number(std::string &line);
 
 std::string remove_comments(std::string &line);
 

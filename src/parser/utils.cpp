@@ -1,11 +1,12 @@
 #include "colours.hpp"
+#include "parser_utils.hpp"
+#include <algorithm>
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <sstream>
-#include "parser_utils.hpp"
+#include <iterator>
 
 bool isnotspace(int i) { return !std::isspace(i); }
-
 
 bool isnotdigit(int i) { return !std::isdigit(i); }
 
@@ -19,11 +20,12 @@ std::string remove_comments(std::string &line)
 	return (line);
 }
 
-std::string trim_left(std::string &line)
+size_t trim_left(std::string &line)
 {
-	line.erase(line.begin(),
-			   std::find_if(line.begin(), line.end(), isnotspace));
-	return (line);
+	std::string::iterator it =
+		std::find_if(line.begin(), line.end(), isnotspace);
+	line.erase(line.begin(), it);
+	return std::distance(line.begin(), it);
 }
 
 int ft_stoi(const std::string &s)
@@ -36,16 +38,17 @@ int ft_stoi(const std::string &s)
 void parse_error(t_file &f, const std::string &error)
 {
 	f.file->close();
-	std::cerr << BOLD << f.filename << ":" << f.i << RED << " error: " << RESET
-			  << BOLD << error << RESET << std::endl;
+	std::cerr << BOLD << f.filename << ":" << f.i << ":" << f.j << RED
+			  << " error: " << RESET << BOLD << error << RESET << std::endl;
 	exit(EXIT_FAILURE);
 }
 
-std::string trim_left_number(std::string &line)
+size_t trim_left_number(std::string &line)
 {
-	line.erase(line.begin(),
-			   std::find_if(line.begin(), line.end(), isnotdigit));
-	return (line);
+	std::string::iterator it =
+		std::find_if(line.begin(), line.end(), isnotdigit);
+	line.erase(line.begin(), it);
+	return std::distance(line.begin(), it);
 }
 
 int skip_lines(t_file &f)
@@ -53,9 +56,10 @@ int skip_lines(t_file &f)
 	while (f.file->good() && !f.file->eof())
 	{
 		++(f.i);
+		f.j = 1;
 		std::getline(*f.file, f.line);
 		remove_comments(f.line);
-		trim_left(f.line);
+		f.j += trim_left(f.line);
 		if (!f.line.empty()) return (0);
 	}
 	return (1);

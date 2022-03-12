@@ -1,18 +1,18 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 class Socket
 {
 public:
-	Socket(int p);
+	explicit Socket(int p);
 
 	~Socket();
 
@@ -20,7 +20,7 @@ public:
 
 	void binding();
 
-	void listening(int bl);
+	void listening(int bl) const;
 
 	void communicate(std::string msg);
 
@@ -33,6 +33,7 @@ public:
 
 	struct sockaddr_in address;
 	unsigned int addrlen;
+
 private:
 	int port;
 	int server_fd;
