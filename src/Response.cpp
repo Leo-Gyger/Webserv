@@ -42,7 +42,7 @@ bool	Response::is_valid(std::string demande)
 	this->body = std::vector<unsigned char> (size);
 	file.read((char *)&this->body[0], size);
 	this->size_body = size;
-	this->request = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type:text/html; charset=UTF-8\r\n\r\n";
+	this->request = "HTTP/1.1 200 OK\r\nSet-Cookie: myCookieName=myCookieKey\r\nConnection: keep-alive\r\nContent-Type:text/html; charset=UTF-8\r\n\r\n";
 	return true;
 }
 
