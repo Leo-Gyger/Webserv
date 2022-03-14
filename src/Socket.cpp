@@ -1,10 +1,11 @@
 #include "../includes/Socket.hpp"
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-Socket::Socket(int p): port(p)
+Socket::Socket(int p) : address(), port(p), response_fd()
 {
 	std::cout << "Socket constructor" << std::endl;
-	memset(&this->address, 0, sizeof(this->address));
-	memset(&this->address.sin_zero, 0, sizeof(this->address.sin_zero));
 	this->address.sin_family = AF_INET;
 	this->address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	this->address.sin_port = htons(port);
@@ -13,22 +14,21 @@ Socket::Socket(int p): port(p)
 	if (this->server_fd == -1)
 	{
 		std::cerr << "Error creating the socket" << std::endl;
-		exit (1);
+		exit(1);
 	}
-
-	return;
 }
 
 void Socket::binding()
 {
-	if (bind(this->server_fd, (struct sockaddr *) &address, sizeof(address)) == -1)
+	if (bind(this->server_fd, (struct sockaddr *) &address, sizeof(address)) ==
+		-1)
 	{
 		std::cerr << "Error binding the socket" << std::endl;
 		exit(1);
 	}
 }
 
-void Socket::listening(int bl)
+void Socket::listening(int bl) const
 {
 	listen(this->server_fd, bl);
 	std::cout << "Server is listening on port " << this->port << std::endl;
