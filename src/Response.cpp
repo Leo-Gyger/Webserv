@@ -3,7 +3,10 @@
 #include <sstream>
 #include <string>
 
-Response::Response() : size_body() {}
+Response::Response(const std::vector<Routes> r) : size_body(), redirect(false)
+{
+	this->routes = r;
+}
 
 std::string Response::answer(std::string &msg)
 {
@@ -25,6 +28,19 @@ std::string Response::answer(std::string &msg)
 	return (this->request);
 }
 
+std::string	Response::redirection(void)
+{
+	std::string	ret;
+	std::string redir_url = "https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2";
+
+	ret = "HTTP/1.1 " + createStatusLine(301) + "\r\n"
+		"Date: " + this->Date() + "\r\n"
+		"Location: " + redir_url + "\r\n"
+		"Connection: close\r\n"
+		"\r\n";
+	return (ret);
+}
+
 bool Response::is_valid(const std::string &demande)
 {
 	std::istringstream s(demande);
@@ -32,21 +48,38 @@ bool Response::is_valid(const std::string &demande)
 	int	status = 200;
 	bool ret_val = true;
 	std::string name;
-	std::string localisation = "www/";
+	std::string::size_type pos;
 
+	if (redirect)
+	{
+		this->request = redirection();
+		this->body.empty();
+		return (true);
+	}
 	std::getline(s, name, ' ');
 	std::getline(s, name, ' ');
-	if (name == "/") name = "/info.html";
+	if (name == "/") name = routes[0].getDefault();
+	for (std::vector<Routes>::size_type i = 0; i != routes.size(); i++)
+	{
+		pos = name.find(routes[i].getPath());
+		if (pos != std::string::npos)
+		{
+			name.erase(pos, routes[i].getPath().size());
+			name.insert(pos,routes[i].getUrl());
+			std::cout << name << std::endl;
+		//	break;
+		}
+	}
 	name = name.substr(1);
-	name = localisation + name;
+	std::cout << name << std::endl;
 	std::ifstream file(name.c_str());
-	file.close();
 	if (!file)
 	{
 		name = "./errorPages/404.html";
 		status = 404;
 		ret_val = false;
 	}
+	file.close();
 	form_body(name);
 	this->findType(name);
 	this->request =
@@ -67,6 +100,7 @@ std::string	Response::createStatusLine(int	code)
 	SLmap[200] = "200 OK";
 	SLmap[404] = "404 Not Found";
 	SLmap[201] = "201 Created";
+	SLmap[301] = "301 Moved Permanently";
 	it = SLmap.find(code);
 	if (it == SLmap.end())
 		return (SLmap[404]);

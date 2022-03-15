@@ -21,6 +21,9 @@ public:
 
 	void setMethods(int p);
 	int getMethods() const;
+	
+	void setDefault(const std::string& s);
+	const std::string	getDefault(void) const;
 
 	void addMethods(int p);
 	void delMethods(int p);
@@ -43,7 +46,8 @@ public:
 private:
 	std::string url;
 	std::string route;
-	bool redir;
+	std::string default_file;
+  bool redir;
 	bool path;
 	bool cgi;
 	int methods;

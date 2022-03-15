@@ -11,7 +11,13 @@
 int parse_route_line(Routes &r, t_file &f)
 {
 	if (f.line.find('}') == 0) return (1);
-	if (f.line.find("path") == 0)
+	if (f.line.find("default") == 0)
+	{
+		f.line.erase(0,7);
+		f.j += trim_left(f.line) + 7;
+		r.setDefault(f.line);
+	}
+	else if (f.line.find("path") == 0)
 	{
 		if (r.getCGI() || r.getRedir() || r.getPath())
 			parse_error(f, "route cannot have more than one of path/redir/cgi");

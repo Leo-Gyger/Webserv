@@ -12,6 +12,10 @@ Routes::Routes() : redir(false), path(false), cgi(false), methods(0) {}
 Routes::~Routes() {}
 
 void Routes::setMethods(int p) { this->methods = p; }
+
+void Routes::setDefault(const std::string& s) {this->def = s;}
+const std::string Routes::getDefault(void) const {return this->def; }
+
 int Routes::getMethods() const { return this->methods; }
 void Routes::addMethods(int p) { this->methods |= p; }
 void Routes::delMethods(int p) { this->methods &= ~p; }
