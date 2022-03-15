@@ -10,7 +10,7 @@ set(EXEC webserv)
 
 include_directories(includes)
 
-file(GLOB SOURCES src/*.cpp src/**/*.cpp)
+file(GLOB SOURCES src/*.cpp src/cgi/*.cpp src/parser/*.cpp)
 file(GLOB HEADERS includes/*.hpp includes/**/*.hpp)
 
 message(SOURCES="${SOURCES}")
