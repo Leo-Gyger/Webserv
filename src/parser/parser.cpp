@@ -13,9 +13,28 @@ int parse_route_line(Routes &r, t_file &f)
 	if (f.line.find('}') == 0) return (1);
 	if (f.line.find("path") == 0)
 	{
+		if (r.getCGI() || r.getRedir() || r.getPath())
+			parse_error(f, "route cannot have more than one of path/redir/cgi");
 		f.line.erase(0, 4);
 		f.j += trim_left(f.line) + 4;
-		r.setPath(f.line);
+		r.setRoute(f.line);
+		r.setPath(true);
+	} else if (f.line.find("redir") == 0)
+	{
+		if (r.getCGI() || r.getRedir() || r.getPath())
+			parse_error(f, "route cannot have more than one of path/redir/cgi");
+		f.line.erase(0, 5);
+		f.j += trim_left(f.line) + 5;
+		r.setRoute(f.line);
+		r.setRedir(true);
+	} else if (f.line.find("cgi") == 0)
+	{
+		if (r.getCGI() || r.getRedir() || r.getPath())
+			parse_error(f, "route cannot have more than one of path/redir/cgi");
+		f.line.erase(0, 3);
+		f.j += trim_left(f.line) + 3;
+		r.setRoute(f.line);
+		r.setCGI(true);
 	} else if (f.line.find("url") == 0)
 	{
 		f.line.erase(0, 3);

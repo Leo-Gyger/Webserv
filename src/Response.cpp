@@ -32,7 +32,7 @@ bool Response::is_valid(const std::string &demande)
 	int	status = 200;
 	bool ret_val = true;
 	std::string name;
-	std::string localisation = "WWW/";
+	std::string localisation = "www/";
 
 	std::getline(s, name, ' ');
 	std::getline(s, name, ' ');

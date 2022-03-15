@@ -17,6 +17,8 @@ public:
 	Routes();
 	~Routes();
 
+	std::string	callCGI(const std::string &body, const std::string &filepath) const;
+
 	void setMethods(int p);
 	int getMethods() const;
 
@@ -26,12 +28,24 @@ public:
 	void setUrl(const std::string &u);
 	std::string getUrl() const;
 
-	void setPath(const std::string &p);
-	std::string getPath() const;
+	void setRoute(const std::string &p);
+	std::string getRoute() const;
+
+	void setRedir(bool r);
+	bool getRedir() const;
+
+	void setPath(bool p);
+	bool getPath() const;
+
+	void setCGI(bool c);
+	bool getCGI() const;
 
 private:
 	std::string url;
-	std::string path;
+	std::string route;
+	bool redir;
+	bool path;
+	bool cgi;
 	int methods;
 };
 
