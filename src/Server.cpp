@@ -9,7 +9,7 @@ Server::Server() : port(80), fd(), bodySize(3000), s()
 void Server::launch()
 {
 	std::string te;
-	Response r;
+	Response r(getRoutes());
 	int size;
 	std::vector<unsigned char> body;
 	std::string ans;
