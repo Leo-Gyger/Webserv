@@ -12,6 +12,8 @@ private:
 	std::string request;
 	std::vector<unsigned char> body;
 	int size_body;
+	std::string	createStatusLine(int code);
+	void	form_body(const std::string& path);
 	std::string	findType(std::string demande);
 	std::string	Date(void);
 	bool is_valid(const std::string &demande);
