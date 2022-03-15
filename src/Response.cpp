@@ -3,9 +3,9 @@
 #include <sstream>
 #include <string>
 
-Response::Response(const std::vector<Routes> r) : size_body(), redirect(false)
+Response::Response(const std::vector<Routes>& routes) : size_body()
 {
-	this->routes = r;
+
 }
 
 std::string Response::answer(std::string &msg)
@@ -28,32 +28,37 @@ std::string Response::answer(std::string &msg)
 	return (this->request);
 }
 
-std::string	Response::redirection(void)
+std::string Response::redirection()
 {
-	std::string	ret;
-	std::string redir_url = "https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2";
+	std::string ret;
+	std::string redir_url =
+		"https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2";
 
-	ret = "HTTP/1.1 " + createStatusLine(301) + "\r\n"
-		"Date: " + this->Date() + "\r\n"
-		"Location: " + redir_url + "\r\n"
-		"Connection: close\r\n"
-		"\r\n";
+	ret = "HTTP/1.1 " + createStatusLine(301) +
+		  "\r\n"
+		  "Date: " +
+		  this->Date() +
+		  "\r\n"
+		  "Location: " +
+		  redir_url +
+		  "\r\n"
+		  "Connection: close\r\n"
+		  "\r\n";
 	return (ret);
 }
 
 bool Response::is_valid(const std::string &demande)
 {
 	std::istringstream s(demande);
-	std::streampos size;
-	int	status = 200;
+	int status = 200;
 	bool ret_val = true;
 	std::string name;
 	std::string::size_type pos;
 
-	if (redirect)
+	if (r.getRedir())
 	{
 		this->request = redirection();
-		this->body.empty();
+		this->body.clear();
 		return (true);
 	}
 	std::getline(s, name, ' ');
@@ -81,18 +86,24 @@ bool Response::is_valid(const std::string &demande)
 	}
 	file.close();
 	form_body(name);
-	this->findType(name);
-	this->request =
-		"HTTP/1.1 " + createStatusLine(status) + "\r\n"
-		"Date: " + this->Date() + "\r\n"
-		"Content-Length: " + this->get_bSize() + "\r\n"
-		"Content-Type: " + this->findType(name) + "\r\n"
-		"charset=UTF-8\r\n\r\n";
+	Response::findType(name);
+	this->request = "HTTP/1.1 " + createStatusLine(status) +
+					"\r\n"
+					"Date: " +
+					this->Date() +
+					"\r\n"
+					"Content-Length: " +
+					this->get_bSize() +
+					"\r\n"
+					"Content-Type: " +
+					this->findType(name) +
+					"\r\n"
+					"charset=UTF-8\r\n\r\n";
 	std::cout << this->request << std::endl;
 	return ret_val;
 }
 
-std::string	Response::createStatusLine(int	code)
+std::string Response::createStatusLine(int code)
 {
 	std::map<int, std::string> SLmap;
 	std::map<int, std::string>::iterator it;
@@ -102,14 +113,13 @@ std::string	Response::createStatusLine(int	code)
 	SLmap[201] = "201 Created";
 	SLmap[301] = "301 Moved Permanently";
 	it = SLmap.find(code);
-	if (it == SLmap.end())
-		return (SLmap[404]);
+	if (it == SLmap.end()) return (SLmap[404]);
 	return (it->second);
 }
 
-void	Response::form_body(const std::string& path)
+void Response::form_body(const std::string &path)
 {
-	std::ifstream	file(path.c_str());
+	std::ifstream file(path.c_str());
 	std::streampos size;
 
 	file.seekg(0, std::ios::end);
@@ -117,10 +127,10 @@ void	Response::form_body(const std::string& path)
 	file.seekg(0, std::ios::beg);
 	this->body = std::vector<unsigned char>(size);
 	file.read((char *) &this->body[0], size);
-	this->size_body = (int)size;
+	this->size_body = (int) size;
 }
 
-std::string	Response::get_bSize(void)
+std::string Response::get_bSize() const
 {
 	std::stringstream s;
 
@@ -128,11 +138,11 @@ std::string	Response::get_bSize(void)
 	return (std::string(s.str()));
 }
 
-std::string	Response::findType(std::string demande)
+std::string Response::findType(std::string demande)
 {
 	std::map<std::string, std::string> extension;
 	std::map<std::string, std::string>::iterator it;
-	std::string	ret;
+	std::string ret;
 
 	extension[".jpg"] = "image/jpeg";
 	extension[".ico"] = "image/x-icon";
@@ -141,31 +151,29 @@ std::string	Response::findType(std::string demande)
 	extension[".avi"] = "video/x-msvideo";
 	extension[".gif"] = "image/gif";
 	extension[".ts"] = "application/typescript";
-	std::string::size_type i,n;
-	i = demande.find(".");
-	n = demande.find(" ", i);
-	std::istringstream ss (demande.substr(i, n));
+	std::string::size_type i, n;
+	i = demande.find('.');
+	n = demande.find(' ', i);
+	std::istringstream ss(demande.substr(i, n));
 	std::getline(ss, demande, ' ');
 	it = extension.find(demande);
-	if (it == extension.end())
-		ret = "application/octet-stream";
+	if (it == extension.end()) ret = "application/octet-stream";
 	else
 		ret = it->second;
 	return (ret);
 }
 
 
-std::string	Response::Date(void)
+std::string Response::Date()
 {
-	std::tm	tm;
 	char buf[1000] = {0};
 	std::stringstream ss;
-	std::time_t	t = time(0);
+	std::time_t t = time(nullptr);
 
-	tm = *gmtime(&t);
+	std::tm tm = *gmtime(&t);
 	strftime(buf, sizeof(buf), "%a %d %b %Y %H:%M:%S %Z", &tm);
 	ss << buf;
-	std::string	str(ss.str());
+	std::string str(ss.str());
 	return (str);
 }
 
@@ -176,14 +184,13 @@ const std::vector<unsigned char> &Response::get_body() const
 
 int Response::get_size() const { return this->size_body; }
 
-Response::Response(const Response &t) : request(t.request), size_body() {}
+Response::Response(const Response &t)
+	: request(t.request), size_body()
+{}
 
-const std::string&    Response::getRequest(void) const
-{
-    return this->request;
-}
+const std::string &Response::getRequest() const { return this->request; }
 
-std::ostream	&operator<<(std::ostream &os, const Response &d)
+std::ostream &operator<<(std::ostream &os, const Response &d)
 {
 	os << d.getRequest() << std::endl;
 	return (os);

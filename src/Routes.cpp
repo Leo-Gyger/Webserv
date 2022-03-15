@@ -13,8 +13,8 @@ Routes::~Routes() {}
 
 void Routes::setMethods(int p) { this->methods = p; }
 
-void Routes::setDefault(const std::string& s) {this->def = s;}
-const std::string Routes::getDefault(void) const {return this->def; }
+void Routes::setDefaultFile(const std::string &s) { this->default_file = s; }
+std::string Routes::getDefaultFile() const { return this->default_file; }
 
 int Routes::getMethods() const { return this->methods; }
 void Routes::addMethods(int p) { this->methods |= p; }

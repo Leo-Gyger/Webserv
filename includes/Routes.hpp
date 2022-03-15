@@ -17,13 +17,14 @@ public:
 	Routes();
 	~Routes();
 
-	std::string	callCGI(const std::string &body, const std::string &filepath) const;
+	std::string callCGI(const std::string &body,
+						const std::string &filepath) const;
 
 	void setMethods(int p);
 	int getMethods() const;
-	
-	void setDefault(const std::string& s);
-	const std::string	getDefault(void) const;
+
+	void setDefaultFile(const std::string &s);
+	std::string getDefaultFile() const;
 
 	void addMethods(int p);
 	void delMethods(int p);
@@ -47,7 +48,7 @@ private:
 	std::string url;
 	std::string route;
 	std::string default_file;
-  bool redir;
+	bool redir;
 	bool path;
 	bool cgi;
 	int methods;
