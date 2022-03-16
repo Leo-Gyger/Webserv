@@ -30,6 +30,7 @@ void Server::launch()
 			exit(1);
 		}
 		te = buf;
+		std::cout << te << std::endl;
 		Response r(getRoutes(),te);
 		ans = r.getRequest();
 		send(this->fd, ans.c_str(), ans.size(), 0);

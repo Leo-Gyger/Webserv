@@ -7,16 +7,22 @@ Response::Response(const std::vector<Routes>& routes, const std::string& header)
 {
 	bool	is_dir = false;
 	int	status = 200;
+	bool	debug = false;
+
+	this->body.clear();
 	this->filename = createFname(header, is_dir);
 	if (!findRoute(routes, filename))
 		status = 404;
 	if (is_dir)
-		filename = r.getDefaultFile();
+	{
+		this->request = redirection(r.getDefaultFile());
+		return;
+	}
 	if (!is_valid(filename))
 		status = 404;
-	if (r.getRedir())
+	if (debug != false)
 	{
-		this->request = redirection();
+		this->request = redirection("https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2");
 		return;
 	}
 	form_body(filename);
@@ -34,11 +40,9 @@ Response::Response(const std::vector<Routes>& routes, const std::string& header)
 					"charset=UTF-8\r\n\r\n";
 }
 
-std::string Response::redirection()
+std::string Response::redirection(const std::string&	location)
 {
 	std::string ret;
-	std::string redir_url =
-		"https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2";
 
 	ret = "HTTP/1.1 " + createStatusLine(301) +
 		  "\r\n"
@@ -46,7 +50,7 @@ std::string Response::redirection()
 		  this->Date() +
 		  "\r\n"
 		  "Location: " +
-		  redir_url +
+		  location +
 		  "\r\n"
 		  "Connection: close\r\n"
 		  "\r\n";

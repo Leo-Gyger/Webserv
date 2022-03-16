@@ -12,7 +12,7 @@ private:
 	std::string request;
 	std::vector<unsigned char> body;
 	int size_body;
-	std::string	redirection(void);
+	std::string	redirection(const	std::string&	location);
 	std::string	createFname(const std::string& header, bool& is_dir);
 	std::string	filename;
 	bool		findRoute(const std::vector<Routes>& r, const std::string&	file_name);
