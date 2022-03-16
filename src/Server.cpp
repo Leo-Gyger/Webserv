@@ -9,7 +9,6 @@ Server::Server() : port(80), fd(), bodySize(3000), s()
 void Server::launch()
 {
 	std::string te;
-	Response r(getRoutes());
 	int size;
 	std::vector<unsigned char> body;
 	std::string ans;
@@ -31,8 +30,8 @@ void Server::launch()
 			exit(1);
 		}
 		te = buf;
-		std::cout << te << std::endl;
-		ans = r.answer(te);
+		Response r(getRoutes(),te);
+		ans = r.getRequest();
 		send(this->fd, ans.c_str(), ans.size(), 0);
 		body = r.get_body();
 		size = r.get_size();

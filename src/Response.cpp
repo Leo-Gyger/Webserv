@@ -3,29 +3,35 @@
 #include <sstream>
 #include <string>
 
-Response::Response(const std::vector<Routes>& routes) : size_body()
+Response::Response(const std::vector<Routes>& routes, const std::string& header) : size_body()
 {
-
-}
-
-std::string Response::answer(std::string &msg)
-{
-	std::string::size_type i;
-
-	i = msg.find("\r\n");
-	if (i == std::string::npos)
-		return ("HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Type: "
-				"text/html; charset=UTF-8\r\n\r\n<!DOCTYPE "
-				"html>\r\n<html><head><title>404</title></"
-				"head>\r\n<body><center><h1>404 Not "
-				"Found</h1><br></center></body></html>\r\n");
-	if (!this->is_valid(msg.substr(0, i)))
-		return ("HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Type: "
-				"text/html; charset=UTF-8\r\n\r\n<!DOCTYPE "
-				"html>\r\n<html><head><title>404</title></"
-				"head>\r\n<body><center><h1>404 Not "
-				"Found</h1><br></center></body></html>\r\n");
-	return (this->request);
+	bool	is_dir = false;
+	int	status = 200;
+	this->filename = createFname(header, is_dir);
+	if (!findRoute(routes, filename))
+		status = 404;
+	if (is_dir)
+		filename = r.getDefaultFile();
+	if (!is_valid(filename))
+		status = 404;
+	if (r.getRedir())
+	{
+		this->request = redirection();
+		return;
+	}
+	form_body(filename);
+	this->request = "HTTP/1.1 " + createStatusLine(status) +
+					"\r\n"
+					"Date: " +
+					this->Date() +
+					"\r\n"
+					"Content-Length: " +
+					this->get_bSize() +
+					"\r\n"
+					"Content-Type: " +
+					this->findType(filename) +
+					"\r\n"
+					"charset=UTF-8\r\n\r\n";
 }
 
 std::string Response::redirection()
@@ -45,61 +51,46 @@ std::string Response::redirection()
 		  "Connection: close\r\n"
 		  "\r\n";
 	return (ret);
+} 
+
+std::string	Response::createFname(const std::string &header, bool& is_dir)
+{
+	std::istringstream	stream(header);
+	std::string name;
+	std::string::iterator	it;
+
+	std::getline(stream, name, ' ');
+	std::getline(stream, name, ' ');
+	it = name.end() - 1;
+	if (*it == '/')
+		is_dir = true;
+	return (name);
 }
 
-bool Response::is_valid(const std::string &demande)
+bool	Response::findRoute(const std::vector<Routes>& routes, const std::string& file_name)
 {
-	std::istringstream s(demande);
-	int status = 200;
-	bool ret_val = true;
-	std::string name;
-	std::string::size_type pos;
-
-	if (r.getRedir())
+	for	(std::vector<Routes>::size_type	i = 0; i != routes.size(); i++)
 	{
-		this->request = redirection();
-		this->body.clear();
-		return (true);
-	}
-	std::getline(s, name, ' ');
-	std::getline(s, name, ' ');
-	if (name == "/") name = routes[0].getDefault();
-	for (std::vector<Routes>::size_type i = 0; i != routes.size(); i++)
-	{
-		pos = name.find(routes[i].getPath());
+		std::string::size_type	pos;
+		pos = file_name.find(routes[i].getUrl());
 		if (pos != std::string::npos)
 		{
-			name.erase(pos, routes[i].getPath().size());
-			name.insert(pos,routes[i].getUrl());
-			std::cout << name << std::endl;
-		//	break;
+			this->r = routes[i];
+			return true;
 		}
 	}
-	name = name.substr(1);
-	std::cout << name << std::endl;
-	std::ifstream file(name.c_str());
+	return false;
+}
+
+bool Response::is_valid(std::string &demande)
+{
+	bool ret_val = true;
+
+	demande = this->r.getRoute() + demande.substr(1);
+	std::ifstream file(demande.c_str());
 	if (!file)
-	{
-		name = "./errorPages/404.html";
-		status = 404;
 		ret_val = false;
-	}
 	file.close();
-	form_body(name);
-	Response::findType(name);
-	this->request = "HTTP/1.1 " + createStatusLine(status) +
-					"\r\n"
-					"Date: " +
-					this->Date() +
-					"\r\n"
-					"Content-Length: " +
-					this->get_bSize() +
-					"\r\n"
-					"Content-Type: " +
-					this->findType(name) +
-					"\r\n"
-					"charset=UTF-8\r\n\r\n";
-	std::cout << this->request << std::endl;
 	return ret_val;
 }
 

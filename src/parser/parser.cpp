@@ -15,7 +15,7 @@ int parse_route_line(Routes &r, t_file &f)
 	{
 		f.line.erase(0,7);
 		f.j += trim_left(f.line) + 7;
-		r.setDefault(f.line);
+		r.setDefaultFile(f.line);
 	}
 	else if (f.line.find("path") == 0)
 	{
