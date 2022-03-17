@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <ctime>
+#include <algorithm>
 #include "Routes.hpp"
 class Response
 {
