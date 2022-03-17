@@ -31,8 +31,17 @@ size_t trim_left(std::string &line)
 int ft_stoi(const std::string &s)
 {
 	int i;
+
 	if (std::istringstream(s) >> i) return (i);
 	return (-1);
+}
+
+std::string ft_itos(size_t i)
+{
+	std::stringstream s;
+
+	s << i;
+	return (std::string(s.str()));
 }
 
 void parse_error(t_file &f, const std::string &error)

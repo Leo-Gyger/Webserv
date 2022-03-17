@@ -8,7 +8,7 @@
 #include <parser.hpp>
 #include <vector>
 
-int parse_route_line(Routes &r, t_file &f)
+int parse_route_line(Route &r, t_file &f)
 {
 	if (f.line.find('}') == 0) return (1);
 	if (f.line.find("default") == 0)
@@ -72,9 +72,9 @@ int parse_route_line(Routes &r, t_file &f)
 	return (0);
 }
 
-Routes parse_route(t_file &f)
+Route parse_route(t_file &f)
 {
-	Routes r;
+	Route r;
 
 	if (!f.line.empty())
 	{

@@ -28,5 +28,6 @@ size_t trim_left_number(std::string &line);
 
 std::string remove_comments(std::string &line);
 
+std::string ft_itos(size_t i);
 
 #endif//WEBSERV_PARSER_UTILS_HPP

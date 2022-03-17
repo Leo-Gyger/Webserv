@@ -2,7 +2,7 @@
 #define SERVER_HPP
 
 #include "Response.hpp"
-#include "Routes.hpp"
+#include "Route.hpp"
 #include "Socket.hpp"
 #include <fstream>
 #include <iostream>
@@ -24,15 +24,15 @@ public:
 	void setBody(int b);
 	int getBody() const;
 
-	void addRoute(const Routes &r);
-	std::vector<Routes> getRoutes();
+	void addRoute(const Route &r);
+	std::vector<Route> getRoutes();
 
 private:
 	int port;
 	int fd;
 	int bodySize;
 	class Socket *s;
-	std::vector<Routes> routesList;
+	std::vector<Route> routesList;
 };
 
 #endif

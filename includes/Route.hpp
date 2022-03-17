@@ -2,8 +2,8 @@
 // Created by Mano Segransan on 3/11/22.
 //
 
-#ifndef WEBSERV_ROUTES_HPP
-#define WEBSERV_ROUTES_HPP
+#ifndef WEBSERV_ROUTE_HPP
+#define WEBSERV_ROUTE_HPP
 
 #include <iostream>
 
@@ -11,14 +11,11 @@
 #define POST 2  // 0b10
 #define DELETE 4// 0b100
 
-class Routes
+class Route
 {
 public:
-	Routes();
-	~Routes();
-
-	std::string callCGI(const std::string &body,
-						const std::string &filepath) const;
+	Route();
+	~Route();
 
 	void setMethods(int p);
 	int getMethods() const;
@@ -55,4 +52,4 @@ private:
 };
 
 
-#endif//WEBSERV_ROUTES_HPP
+#endif//WEBSERV_ROUTE_HPP
