@@ -15,9 +15,8 @@ Response::Response(const std::vector<Routes>& routes, const std::string& header)
 {
 	bool	is_dir = false;
 	int	status = 200;
-	bool	debug = false;
 	std::vector<Routes> tmp = routes;
-
+	filename.clear();
 	std::sort(tmp.begin(),tmp.end(),mySort);
 	this->body.clear();
 	this->filename = createFname(header, is_dir);
@@ -28,6 +27,7 @@ Response::Response(const std::vector<Routes>& routes, const std::string& header)
 	}
 	if (is_dir)
 	{
+		std::cout << "entered" << std::endl;
 		this->request = redirection(r.getDefaultFile());
 		return;
 	}
@@ -35,11 +35,6 @@ Response::Response(const std::vector<Routes>& routes, const std::string& header)
 	{
 		status = 404;
 		filename = "errorPages/404.html";
-	}
-	if (debug != false)
-	{
-		this->request = redirection("https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2");
-		return;
 	}
 	form_body(filename);
 	this->request = "HTTP/1.1 " + createStatusLine(status) +
@@ -89,8 +84,6 @@ std::string	Response::createFname(const std::string &header, bool& is_dir)
 
 bool	Response::findRoute(const std::vector<Routes>& routes, const std::string& file_name)
 {
-	for (std::vector<Routes>::size_type i = 0; i != routes.size(); i++)
-		std::cout << routes[i].getRoute() << std::endl;
 		for	(std::vector<Routes>::size_type	i = 0; i != routes.size(); i++)
 		{
 			std::string::size_type	pos;
@@ -109,6 +102,7 @@ bool Response::is_valid(std::string &demande)
 	bool ret_val = true;
 
 	demande = this->r.getRoute() + demande.substr(1);
+	//std::cout << demande << std::endl;
 	std::ifstream file(demande.c_str());
 	if (!file)
 		ret_val = false;

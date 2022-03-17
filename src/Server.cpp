@@ -13,20 +13,21 @@ void Server::launch()
 	std::vector<unsigned char> body;
 	std::string ans;
 
-	char *buf = (char *) malloc(sizeof(char) * this->bodySize);
-	if (!buf) exit(EXIT_FAILURE);
 	while (true)
 	{
+		char *buf = new char [this->bodySize];
 		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
 						  (socklen_t *) &s->addrlen);
 		if (this->fd == -1)
 		{
 			close(this->fd);
+			delete[] buf;
 			exit(1);
 		}
 		if (recv(this->fd, buf, this->bodySize, 0) == 0)
 		{
 			close(this->fd);
+			delete[] buf;
 			exit(1);
 		}
 		te = buf;
@@ -38,6 +39,7 @@ void Server::launch()
 		size = r.get_size();
 		send(this->fd, (char *) &body[0], size, 0);
 		close(this->fd);
+		delete [] buf;
 	}
 }
 
