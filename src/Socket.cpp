@@ -6,11 +6,13 @@
 Socket::Socket(int p) : address(), port(p), response_fd()
 {
 	std::cout << "Socket constructor" << std::endl;
+	int val = 1;
 	this->address.sin_family = AF_INET;
 	this->address.sin_addr.s_addr = inet_addr("127.0.0.1");
 	this->address.sin_port = htons(port);
 	this->addrlen = sizeof(address);
 	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	setsockopt(this->server_fd, IPPROTO_IP,SO_REUSEADDR,&val,1);
 	if (this->server_fd == -1)
 	{
 		std::cerr << "Error creating the socket" << std::endl;

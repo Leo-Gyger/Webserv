@@ -8,18 +8,31 @@
 #include <string>
 #include <unistd.h>
 
+struct	sortLString{
+	bool operator() (Routes A, Routes B) const
+	{
+		return (A.getRoute().size() > B.getRoute().size());
+	}
+} mySort;
+
 Response::Response(const std::vector<Route> &routes, const Request &req)
 	: body(), size_body()
 {
 	bool is_dir;
 	int status = 200;
-	bool debug = false;
 
+  std::vector<Routes> tmp = routes;
+  std::sort(tmp.begin(),tmp.end(),mySort);
 	this->filename = req.getRoute();
-	if (!findRoute(routes, filename)) status = 404;
-	is_dir = *(this->filename.end() - 1) == '/';
+	if (!findRoute(tmp, filename))
+	{
+		status = 404;
+		filename = "errorPages/404.html";
+	}
+  is_dir = *(this->filename.end() - 1) == '/';
 	if (is_dir)
 	{
+		std::cout << "entered" << std::endl;
 		this->request = redirection(r.getDefaultFile());
 		return;
 	}
@@ -28,12 +41,10 @@ Response::Response(const std::vector<Route> &routes, const Request &req)
 		this->request = Response::callCGI(req);
 		return;
 	}
-	if (!is_valid(filename)) status = 404;
-	if (debug != false)
+	if (!is_valid(filename))
 	{
-		this->request = redirection(
-			"https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2");
-		return;
+		status = 404;
+		filename = "errorPages/404.html";
 	}
 	form_body(filename);
 	this->request = "HTTP/1.1 " + createStatusLine(status) +
@@ -83,16 +94,16 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 bool Response::findRoute(const std::vector<Route> &routes,
 						 const std::string &file_name)
 {
-	for (std::vector<Route>::size_type i = 0; i != routes.size(); i++)
-	{
-		std::string::size_type pos;
-		pos = file_name.find(routes[i].getUrl());
-		if (pos != std::string::npos)
+		for	(std::vector<Routes>::size_type	i = 0; i != routes.size(); i++)
 		{
-			this->r = routes[i];
-			return true;
+			std::string::size_type	pos;
+			pos = file_name.find(routes[i].getUrl());
+			if (pos != std::string::npos)
+			{
+				this->r = routes[i];
+				return true;
+			}
 		}
-	}
 	return false;
 }
 
@@ -101,6 +112,7 @@ bool Response::is_valid(std::string &demande)
 	bool ret_val = true;
 
 	demande = this->r.getRoute() + demande.substr(1);
+	//std::cout << demande << std::endl;
 	std::ifstream file(demande.c_str());
 	if (!file) ret_val = false;
 	file.close();
@@ -199,12 +211,7 @@ std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)
 	meta_var["SERVER_PORT"] = req.getServerPort();
 	meta_var["SERVER_PROTOCOL"] = "HTTP/1.1";
 	meta_var["SERVER_SOFTWARE"] = "";// todo
-	meta_var["SERVER_NAME"] = "";    // todo
-	meta_var["SERVER_NAME"] = "";    // todo
-
 	meta_var["QUERY_STRING"] = req.getQueryString();
-	meta_var["QUERY_STRING"] = req.getQueryString();
-
 
 	return (meta_var);
 }
