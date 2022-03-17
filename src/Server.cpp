@@ -9,7 +9,7 @@ Server::Server() : port(80), fd(), bodySize(3000), s()
 void Server::launch()
 {
 	std::string te;
-	int size;
+	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
 
@@ -24,14 +24,16 @@ void Server::launch()
 			close(this->fd);
 			exit(1);
 		}
-		if (recv(this->fd, buf, this->bodySize, 0) == 0)
+		size = recv(this->fd, buf, this->bodySize, 0);
+		if (size == 0)
 		{
 			close(this->fd);
 			exit(1);
 		}
+		buf[size] = 0;
 		te = buf;
 		std::cout << te << std::endl;
-		Response r(getRoutes(),te);
+		Response r(getRoutes(), te);
 		ans = r.getRequest();
 		send(this->fd, ans.c_str(), ans.size(), 0);
 		body = r.get_body();

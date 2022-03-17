@@ -35,6 +35,14 @@ int ft_stoi(const std::string &s)
 	return (-1);
 }
 
+std::string ft_itos(size_t i)
+{
+	std::stringstream s;
+
+	s << i;
+	return (std::string(s.str()));
+}
+
 void parse_error(t_file &f, const std::string &error)
 {
 	f.file->close();

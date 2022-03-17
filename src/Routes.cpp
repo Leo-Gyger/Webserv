@@ -3,9 +3,6 @@
 //
 
 #include "Routes.hpp"
-#include "cgi.hpp"
-#include <unistd.h>
-
 
 Routes::Routes() : redir(false), path(false), cgi(false), methods(0) {}
 
@@ -34,18 +31,3 @@ bool Routes::getPath() const { return this->path; }
 
 void Routes::setCGI(bool c) { this->cgi = c; }
 bool Routes::getCGI() const { return this->cgi; }
-
-
-std::string Routes::callCGI(const std::string &body,
-							const std::string &filepath) const
-{
-	int fd[2];
-	std::string buffer;
-
-	if (!this->cgi) return ("");
-	if (pipe(fd) == -1) exit(EXIT_FAILURE);
-	write(fd[1], body.c_str(), body.length());
-	close(fd[1]);
-	get_gci(buffer, filepath, fd);
-	return (buffer);
-}

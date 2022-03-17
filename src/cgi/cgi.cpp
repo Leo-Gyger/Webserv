@@ -39,7 +39,7 @@ int execute_cgi(const std::string &filepath, int in[2])
 		if (dup2(fd[1], STDOUT_FILENO) == -1) exit(EXIT_FAILURE);
 		if (dup2(in[0], STDIN_FILENO) == -1) exit(EXIT_FAILURE);
 		if (execlp(exec.c_str(), exec.c_str(), filepath.c_str(),
-				   (char *) nullptr) == -1)
+				   (char *) NULL) == -1)
 		{
 			std::cout << "err" << std::endl;
 			exit(127);

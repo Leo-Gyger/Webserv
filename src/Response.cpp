@@ -1,46 +1,54 @@
 #include "Response.hpp"
+#include "cgi.hpp"
+#include "parser_utils.hpp"
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 
-Response::Response(const std::vector<Routes>& routes, const std::string& header) : size_body()
+Response::Response(const std::vector<Routes> &routes, const std::string &header)
+	: body(), size_body()
 {
-	bool	is_dir = false;
-	int	status = 200;
-	bool	debug = false;
+	bool is_dir = false;
+	int status = 200;
+	bool debug = false;
 
-	this->body.clear();
 	this->filename = createFname(header, is_dir);
-	if (!findRoute(routes, filename))
-		status = 404;
+	if (!findRoute(routes, filename)) status = 404;
 	if (is_dir)
 	{
 		this->request = redirection(r.getDefaultFile());
 		return;
 	}
-	if (!is_valid(filename))
-		status = 404;
+	if (r.getCGI())
+	{
+		this->request = Response::callCGI(header, "", filename);
+		return ;
+	}
+	if (!is_valid(filename)) status = 404;
 	if (debug != false)
 	{
-		this->request = redirection("https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2");
+		this->request = redirection(
+			"https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.2");
 		return;
 	}
 	form_body(filename);
 	this->request = "HTTP/1.1 " + createStatusLine(status) +
 					"\r\n"
 					"Date: " +
-					this->Date() +
+					Date() +
 					"\r\n"
 					"Content-Length: " +
-					this->get_bSize() +
+					ft_itos(this->size_body) +
 					"\r\n"
 					"Content-Type: " +
-					this->findType(filename) +
+					findType(filename) +
 					"\r\n"
 					"charset=UTF-8\r\n\r\n";
 }
 
-std::string Response::redirection(const std::string&	location)
+std::string Response::redirection(const std::string &location)
 {
 	std::string ret;
 
@@ -55,27 +63,27 @@ std::string Response::redirection(const std::string&	location)
 		  "Connection: close\r\n"
 		  "\r\n";
 	return (ret);
-} 
+}
 
-std::string	Response::createFname(const std::string &header, bool& is_dir)
+std::string Response::createFname(const std::string &header, bool &is_dir)
 {
-	std::istringstream	stream(header);
+	std::istringstream stream(header);
 	std::string name;
-	std::string::iterator	it;
+	std::string::iterator it;
 
 	std::getline(stream, name, ' ');
 	std::getline(stream, name, ' ');
 	it = name.end() - 1;
-	if (*it == '/')
-		is_dir = true;
+	if (*it == '/') is_dir = true;
 	return (name);
 }
 
-bool	Response::findRoute(const std::vector<Routes>& routes, const std::string& file_name)
+bool Response::findRoute(const std::vector<Routes> &routes,
+						 const std::string &file_name)
 {
-	for	(std::vector<Routes>::size_type	i = 0; i != routes.size(); i++)
+	for (std::vector<Routes>::size_type i = 0; i != routes.size(); i++)
 	{
-		std::string::size_type	pos;
+		std::string::size_type pos;
 		pos = file_name.find(routes[i].getUrl());
 		if (pos != std::string::npos)
 		{
@@ -92,8 +100,7 @@ bool Response::is_valid(std::string &demande)
 
 	demande = this->r.getRoute() + demande.substr(1);
 	std::ifstream file(demande.c_str());
-	if (!file)
-		ret_val = false;
+	if (!file) ret_val = false;
 	file.close();
 	return ret_val;
 }
@@ -125,14 +132,6 @@ void Response::form_body(const std::string &path)
 	this->size_body = (int) size;
 }
 
-std::string Response::get_bSize() const
-{
-	std::stringstream s;
-
-	s << this->size_body;
-	return (std::string(s.str()));
-}
-
 std::string Response::findType(std::string demande)
 {
 	std::map<std::string, std::string> extension;
@@ -158,12 +157,47 @@ std::string Response::findType(std::string demande)
 	return (ret);
 }
 
+std::string Response::callCGI(const std::string &header,
+							  const std::string &requestBody,
+							  const std::string &filepath)
+{
+	int fd[2];
+	std::string buffer;
+
+	std::map<std::string, std::string> meta_var =
+		Response::buildCGIEnv(header, requestBody);
+
+	if (pipe(fd) == -1) exit(EXIT_FAILURE);
+	write(fd[1], requestBody.c_str(), requestBody.length());
+	close(fd[1]);
+	get_gci(buffer, filepath, fd);
+	return (buffer);
+}
+
+std::map<std::string, std::string>
+Response::buildCGIEnv(const std::string &header, const std::string &requestBody)
+{
+	(void ) header;
+	std::map<std::string, std::string> meta_var;
+
+	meta_var["AUTH_TYPE"] = "";
+	if (requestBody.length())
+		meta_var["CONTENT_LENGTH"] = ft_itos(requestBody.length());
+	size_t i = header.find("Content-Type: ") + std::string("Content-Type: ").length();
+	meta_var["CONTENT_TYPE"] = header.substr(i, header.find(';', i));
+	meta_var["AUTH_TYPE"] = "";
+	meta_var["AUTH_TYPE"] = "";
+	meta_var["AUTH_TYPE"] = "";
+	meta_var["AUTH_TYPE"] = "";
+
+	return (meta_var);
+}
 
 std::string Response::Date()
 {
 	char buf[1000] = {0};
 	std::stringstream ss;
-	std::time_t t = time(nullptr);
+	std::time_t t = time(NULL);
 
 	std::tm tm = *gmtime(&t);
 	strftime(buf, sizeof(buf), "%a %d %b %Y %H:%M:%S %Z", &tm);
@@ -179,9 +213,7 @@ const std::vector<unsigned char> &Response::get_body() const
 
 int Response::get_size() const { return this->size_body; }
 
-Response::Response(const Response &t)
-	: request(t.request), size_body()
-{}
+Response::Response(const Response &t) : request(t.request), size_body() {}
 
 const std::string &Response::getRequest() const { return this->request; }
 
