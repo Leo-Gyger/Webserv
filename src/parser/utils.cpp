@@ -31,6 +31,7 @@ size_t trim_left(std::string &line)
 int ft_stoi(const std::string &s)
 {
 	int i;
+
 	if (std::istringstream(s) >> i) return (i);
 	return (-1);
 }

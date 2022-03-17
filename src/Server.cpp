@@ -1,4 +1,6 @@
 #include "Server.hpp"
+#include "Request.hpp"
+#include "parser_utils.hpp"
 #include <vector>
 
 Server::Server() : port(80), fd(), bodySize(3000), s()
@@ -33,7 +35,10 @@ void Server::launch()
 		buf[size] = 0;
 		te = buf;
 		std::cout << te << std::endl;
-		Response r(getRoutes(), te);
+		std::string serverName =
+			"localhost"; /* TODO: fix hardcoded serverName */
+		Request req(te, serverName, this->port);
+		Response r(getRoutes(), req);
 		ans = r.getRequest();
 		send(this->fd, ans.c_str(), ans.size(), 0);
 		body = r.get_body();
@@ -58,5 +63,5 @@ int Server::getPort() const { return (this->port); }
 void Server::setBody(int b) { this->bodySize = b; }
 int Server::getBody() const { return this->bodySize; }
 
-void Server::addRoute(const Routes &r) { routesList.push_back(r); }
-std::vector<Routes> Server::getRoutes() { return this->routesList; }
+void Server::addRoute(const Route &r) { routesList.push_back(r); }
+std::vector<Route> Server::getRoutes() { return this->routesList; }

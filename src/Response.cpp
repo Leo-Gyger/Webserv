@@ -1,4 +1,5 @@
 #include "Response.hpp"
+#include "Request.hpp"
 #include "cgi.hpp"
 #include "parser_utils.hpp"
 #include <cstdlib>
@@ -7,15 +8,16 @@
 #include <string>
 #include <unistd.h>
 
-Response::Response(const std::vector<Routes> &routes, const std::string &header)
+Response::Response(const std::vector<Route> &routes, const Request &req)
 	: body(), size_body()
 {
-	bool is_dir = false;
+	bool is_dir;
 	int status = 200;
 	bool debug = false;
 
-	this->filename = createFname(header, is_dir);
+	this->filename = req.getRoute();
 	if (!findRoute(routes, filename)) status = 404;
+	is_dir = *(this->filename.end() - 1) == '/';
 	if (is_dir)
 	{
 		this->request = redirection(r.getDefaultFile());
@@ -23,8 +25,8 @@ Response::Response(const std::vector<Routes> &routes, const std::string &header)
 	}
 	if (r.getCGI())
 	{
-		this->request = Response::callCGI(header, "", filename);
-		return ;
+		this->request = Response::callCGI(req);
+		return;
 	}
 	if (!is_valid(filename)) status = 404;
 	if (debug != false)
@@ -78,10 +80,10 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 	return (name);
 }
 
-bool Response::findRoute(const std::vector<Routes> &routes,
+bool Response::findRoute(const std::vector<Route> &routes,
 						 const std::string &file_name)
 {
-	for (std::vector<Routes>::size_type i = 0; i != routes.size(); i++)
+	for (std::vector<Route>::size_type i = 0; i != routes.size(); i++)
 	{
 		std::string::size_type pos;
 		pos = file_name.find(routes[i].getUrl());
@@ -157,38 +159,52 @@ std::string Response::findType(std::string demande)
 	return (ret);
 }
 
-std::string Response::callCGI(const std::string &header,
-							  const std::string &requestBody,
-							  const std::string &filepath)
+std::string Response::callCGI(const Request &req)
 {
 	int fd[2];
 	std::string buffer;
 
-	std::map<std::string, std::string> meta_var =
-		Response::buildCGIEnv(header, requestBody);
+	std::map<std::string, std::string> meta_var = Response::buildCGIEnv(req);
 
 	if (pipe(fd) == -1) exit(EXIT_FAILURE);
-	write(fd[1], requestBody.c_str(), requestBody.length());
+	write(fd[1], req.getBody().c_str(), req.getBody().length());
 	close(fd[1]);
-	get_gci(buffer, filepath, fd);
+	get_gci(
+		buffer,
+		this->r.getRoute() +
+			req.getRoute().substr(this->r.getUrl().length(), std::string::npos),
+		fd, meta_var);
+	std::cout << "BUFFER:" << buffer << std::endl;
 	return (buffer);
 }
 
-std::map<std::string, std::string>
-Response::buildCGIEnv(const std::string &header, const std::string &requestBody)
+std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)
 {
-	(void ) header;
 	std::map<std::string, std::string> meta_var;
 
-	meta_var["AUTH_TYPE"] = "";
-	if (requestBody.length())
-		meta_var["CONTENT_LENGTH"] = ft_itos(requestBody.length());
-	size_t i = header.find("Content-Type: ") + std::string("Content-Type: ").length();
-	meta_var["CONTENT_TYPE"] = header.substr(i, header.find(';', i));
-	meta_var["AUTH_TYPE"] = "";
-	meta_var["AUTH_TYPE"] = "";
-	meta_var["AUTH_TYPE"] = "";
-	meta_var["AUTH_TYPE"] = "";
+	meta_var["AUTH_TYPE"] = req.getAuthorization();
+	meta_var["CONTENT_LENGTH"] = req.getContentLength();
+	meta_var["CONTENT_TYPE"] = req.getContentType();
+	meta_var["GATEWAY_INTERFACE"] = "CGI/1.1";
+	meta_var["PATH_INFO"] = "";      // todo
+	meta_var["PATH_TRANSLATED"] = "";// todo
+	meta_var["QUERY_STRING"] = req.getQueryString();
+	meta_var["REMOTE_ADDR"] = ""; // todo
+	meta_var["REMOTE_HOST"] = ""; // todo
+	meta_var["REMOTE_IDENT"] = "";// todo
+	meta_var["REMOTE_USER"] = ""; // todo
+	meta_var["REQUEST_METHOD"] = req.getMethod();
+	meta_var["SCRIPT_NAME"] = "";// todo
+	meta_var["SERVER_NAME"] = req.getServerName();
+	meta_var["SERVER_PORT"] = req.getServerPort();
+	meta_var["SERVER_PROTOCOL"] = "HTTP/1.1";
+	meta_var["SERVER_SOFTWARE"] = "";// todo
+	meta_var["SERVER_NAME"] = "";    // todo
+	meta_var["SERVER_NAME"] = "";    // todo
+
+	meta_var["QUERY_STRING"] = req.getQueryString();
+	meta_var["QUERY_STRING"] = req.getQueryString();
+
 
 	return (meta_var);
 }
