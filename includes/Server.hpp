@@ -31,7 +31,8 @@ private:
 	int port;
 	int fd;
 	int bodySize;
-	class Socket *s;
+	//class Socket *s;
+	std::vector<class Socket> s;
 	std::vector<Route> routesList;
 };
 

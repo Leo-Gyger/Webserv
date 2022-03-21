@@ -9,19 +9,19 @@
 #include <unistd.h>
 
 struct	sortLString{
-	bool operator() (Routes A, Routes B) const
+	bool operator() (Route A, Route B) const
 	{
 		return (A.getRoute().size() > B.getRoute().size());
 	}
 } mySort;
 
-Response::Response(const std::vector<Route> &routes, const Request &req)
+Response::Response(const std::vector<Route> &route, const Request &req)
 	: body(), size_body()
 {
 	bool is_dir;
 	int status = 200;
 
-  std::vector<Routes> tmp = routes;
+  std::vector<Route> tmp = route;
   std::sort(tmp.begin(),tmp.end(),mySort);
 	this->filename = req.getRoute();
 	if (!findRoute(tmp, filename))
@@ -91,16 +91,17 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 	return (name);
 }
 
-bool Response::findRoute(const std::vector<Route> &routes,
+bool Response::findRoute(const std::vector<Route> &route,
 						 const std::string &file_name)
 {
-		for	(std::vector<Routes>::size_type	i = 0; i != routes.size(); i++)
+		for	(std::vector<Route>::size_type	i = 0; i != route.size(); i++)
 		{
 			std::string::size_type	pos;
-			pos = file_name.find(routes[i].getUrl());
+			pos = file_name.find(route[i].getUrl());
 			if (pos != std::string::npos)
 			{
-				this->r = routes[i];
+				std::cout << route[i].getUrl() << std::endl;
+				this->r = route[i];
 				return true;
 			}
 		}
@@ -111,8 +112,8 @@ bool Response::is_valid(std::string &demande)
 {
 	bool ret_val = true;
 
-	demande = this->r.getRoute() + demande.substr(1);
-	//std::cout << demande << std::endl;
+	demande = this->r.getRoute() + demande.substr(this->r.getUrl().size());
+	std::cout << demande << std::endl;
 	std::ifstream file(demande.c_str());
 	if (!file) ret_val = false;
 	file.close();

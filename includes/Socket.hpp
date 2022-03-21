@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -39,6 +40,7 @@ public:
 	unsigned int addrlen;
 
 private:
+	int	epfd;
 	int port;
 	int server_fd;
 	int response_fd;
