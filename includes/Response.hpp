@@ -43,7 +43,7 @@ private:
 	static std::string Date();
 	std::string redirection(const std::string &location);
 	static std::string createFname(const std::string &header, bool &is_dir);
-	bool findRoute(const std::vector<Route> &r, const std::string &file_name);
+	bool findRoute(const std::vector<Route> &r, const std::string &file_name, const Request &req);
 	bool is_valid(std::string &demande);
 };
 std::ostream &operator<<(std::ostream &ostream, const Response &d);
