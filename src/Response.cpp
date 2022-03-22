@@ -8,12 +8,11 @@
 #include <string>
 #include <unistd.h>
 
-struct	sortLString{
-	bool operator() (Route A, Route B) const
-	{
-		return (A.getRoute().size() > B.getRoute().size());
-	}
-} mySort;
+
+bool mySort(const Route &A, const Route &B)
+{
+	return (A.getRoute().size() > B.getRoute().size());
+}
 
 Response::Response(const std::vector<Route> &route, const Request &req)
 	: body(), size_body()
@@ -21,15 +20,19 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 	bool is_dir;
 	int status = 200;
 
-  std::vector<Route> tmp = route;
-  std::sort(tmp.begin(),tmp.end(),mySort);
+	typedef  bool (Request::*filterMethods)(const Route &R) const;
+
+	filterMethods p = &Request::filterMethod;
+	std::vector<Route> tmp = route;
+	tmp.erase(std::remove_if(tmp.begin(), tmp.end(), p), tmp.end());
+	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
 	if (!findRoute(tmp, filename))
 	{
 		status = 404;
 		filename = "errorPages/404.html";
 	}
-  is_dir = *(this->filename.end() - 1) == '/';
+	is_dir = *(this->filename.end() - 1) == '/';
 	if (is_dir)
 	{
 		std::cout << "entered" << std::endl;
@@ -94,17 +97,17 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 bool Response::findRoute(const std::vector<Route> &route,
 						 const std::string &file_name)
 {
-		for	(std::vector<Route>::size_type	i = 0; i != route.size(); i++)
+	for (std::vector<Route>::size_type i = 0; i != route.size(); i++)
+	{
+		std::string::size_type pos;
+		pos = file_name.find(route[i].getUrl());
+		if (pos != std::string::npos)
 		{
-			std::string::size_type	pos;
-			pos = file_name.find(route[i].getUrl());
-			if (pos != std::string::npos)
-			{
-				std::cout << route[i].getUrl() << std::endl;
-				this->r = route[i];
-				return true;
-			}
+			std::cout << route[i].getUrl() << std::endl;
+			this->r = route[i];
+			return true;
 		}
+	}
 	return false;
 }
 

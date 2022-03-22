@@ -6,6 +6,7 @@
 #define WEBSERV_REQUEST_HPP
 
 #include <iostream>
+#include "Route.hpp"
 
 class Request
 {
@@ -25,6 +26,7 @@ public:
 	std::string getServerPort() const;
 	std::string getBody() const;
 
+	bool filterMethod(const Route &R) const;
 private:
 	std::string method;
 	std::string route;
