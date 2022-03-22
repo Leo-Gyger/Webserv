@@ -1,11 +1,9 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "parser_utils.hpp"
-#include <vector>
 #include <poll.h>
-Server::Server() : port(80), fd(), bodySize(3000)
-{
-}
+#include <vector>
+Server::Server() : port(80), fd(), bodySize(3000) {}
 
 void Server::launch()
 {
@@ -13,22 +11,22 @@ void Server::launch()
 	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
-	struct pollfd fds;
+	struct pollfd fds = {};
 	int status;
 	fds.events = POLLPRI | POLLOUT;
-	do
-	{
-		for (size_t i = 0; i != s.size(); i++)
+	do {
+		for (size_t i = 0; i < s.size(); i++)
 		{
-			this->fd = accept(s[i].getServerFd(), (struct sockaddr *) &s[i].address,
-						  (socklen_t *) &s[i].addrlen);
+			this->fd =
+				accept(s[i].getServerFd(), (struct sockaddr *) &s[i].address,
+					   (socklen_t *) &s[i].addrlen);
 			fds.fd = this->fd;
 		}
-		status = poll(&fds, 1,1000);
+		status = poll(&fds, 1, 1000);
 		if (status == -1)
 		{
-			close (this->fd);
-			close (s[0].getServerFd());
+			close(this->fd);
+			close(s[0].getServerFd());
 			exit(1);
 		}
 		std::cout << status << std::endl;
@@ -39,9 +37,8 @@ void Server::launch()
 		}
 		for (int i = 0; i != status; i++)
 		{
-			char *buf = new char [this->bodySize];
-			for (int in = 0; in != this->bodySize; in++)
-				buf[in] = 0;
+			char *buf = new char[this->bodySize];
+			for (int in = 0; in != this->bodySize; in++) buf[in] = 0;
 			size = recv(this->fd, buf, this->bodySize, 0);
 			if (size == 0)
 			{
@@ -55,7 +52,7 @@ void Server::launch()
 			te = buf;
 			std::cout << te << std::endl;
 			std::string serverName =
-			"localhost"; /* TODO: fix hardcoded serverName */
+				"localhost"; /* TODO: fix hardcoded serverName */
 			Request req(te, serverName, this->port);
 			Response r(getRoutes(), req);
 			ans = r.getRequest();
@@ -64,7 +61,7 @@ void Server::launch()
 			size = r.get_size();
 			send(this->fd, (char *) &body[0], size, 0);
 			close(this->fd);
-			delete [] buf;
+			delete[] buf;
 		}
 	} while (status != 0);
 }

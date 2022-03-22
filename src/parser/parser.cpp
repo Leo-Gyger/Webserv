@@ -78,9 +78,13 @@ Route parse_route(t_file &f)
 
 	if (!f.line.empty())
 	{
-		if (f.line.find('}') == 0) return (r);
-		else
-			parse_error(f, "garbage at EOL");
+		if (f.line.find('}') == 0)
+		{
+			if (r.getCGI() || r.getRedir() || r.getPath())
+				return (r);
+			parse_error(f, "missing directive in route");
+		}
+		parse_error(f, "garbage at EOL");
 	}
 	while (f.file->good() && !f.file->eof())
 	{
@@ -135,8 +139,7 @@ Server parse_server(t_file &f)
 	if (!f.line.empty())
 	{
 		if (f.line.find('}') == 0) return (sv);
-		else
-			parse_error(f, "garbage at EOL");
+		parse_error(f, "garbage at EOL");
 	}
 	while (f.file->good() && !f.file->eof())
 	{
