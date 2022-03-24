@@ -56,6 +56,7 @@ int parse_route_line(Route &r, t_file &f)
 		{
 			pos = f.line.find(',');
 			token = f.line.substr(0, pos);
+			r.method.push_back(token);
 			if (token == "GET") r.addMethods(GET);
 			else if (token == "POST")
 				r.addMethods(POST);

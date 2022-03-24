@@ -96,7 +96,7 @@ bool Response::findRoute(const std::vector<Route> &route,
 		{
 			std::string::size_type	pos;
 			pos = file_name.find(route[i].getUrl());
-			if (pos != std::string::npos && req.getMethod() == "GET")
+			if (pos != std::string::npos && req.getMethod() == *(route[i].method.begin()))
 			{
 				//std::cout << route[i].getUrl() << std::endl;
 				this->r = route[i];
