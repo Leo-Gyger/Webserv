@@ -40,10 +40,17 @@ Request::Request(std::string &header, std::string &svName, int svPort)
 
 	i = header.find("Content-Length: ") +
 		std::string("Content-Length: ").length();
-	this->contentLength = header.substr(i, header.find("\r\n", i) - i);
-
-	this->body =
-		header.substr(header.find("\r\n\r\n", i) + 4, std::string::npos);
+	if (i != std::string::npos)
+	{
+		this->contentLength = header.substr(i, header.find("\r\n", i) - i);
+		this->body =
+			header.substr(header.find("\r\n\r\n", i) + 4, std::string::npos);
+	}
+	else 
+	{
+		i = header.find("\r\n\r\n");
+		this->body = header.substr(i, std::string::npos);
+	}
 	return;
 }
 

@@ -2,7 +2,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <poll.h>
+
 Socket::Socket(int p) : address(), port(p), response_fd()
 {
 	std::cout << "Socket constructor" << std::endl;
