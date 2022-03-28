@@ -92,13 +92,20 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 bool Response::findRoute(const std::vector<Route> &route,
 						 const std::string &file_name, const Request&	req)
 {
+	std::string::size_type	a;
 		for	(std::vector<Route>::size_type	i = 0; i != route.size(); i++)
 		{
 			std::string::size_type	pos;
 			pos = file_name.find(route[i].getUrl());
 			if (pos != std::string::npos && req.getMethod() == *(route[i].method.begin()))
 			{
-				//std::cout << route[i].getUrl() << std::endl;
+				for (a = 0; a != route[i].method.size(); a++)
+				{
+					if (req.getMethod() != route[i].method.begin()[a])
+						break;
+				}
+				if (a != route[i].method.size())
+					break;
 				this->r = route[i];
 				return true;
 			}
