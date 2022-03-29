@@ -5,6 +5,26 @@
 #include <vector>
 Server::Server() : port(80), fd(), bodySize(3000) {}
 
+std::string Server::readSocket() const
+{
+	std::string te;
+
+	char *buf = new char[this->bodySize];
+	for (int in = 0; in != this->bodySize; in++) buf[in] = 0;
+	size_t size = recv(this->fd, buf, this->bodySize, 0);
+	if (size == 0)
+	{
+		close(this->fd);
+		delete[] buf;
+		exit(1);//todo: we should not exit
+	}
+	te.resize(size);
+	buf[size] = 0;
+	te = buf;
+	delete[] buf;
+	return (te);
+}
+
 void Server::launch()
 {
 	std::string te;
@@ -13,7 +33,7 @@ void Server::launch()
 	std::string ans;
 	struct pollfd fds = {};
 	int status;
-	fds.events = POLLPRI | POLLOUT;
+	fds.events = POLLIN | POLLPRI | POLLOUT;
 	do {
 		for (size_t i = 0; i < s.size(); i++)
 		{
@@ -36,21 +56,16 @@ void Server::launch()
 		}
 		for (int i = 0; i != status; i++)
 		{
-			char *buf = new char[this->bodySize];
-			for (int in = 0; in != this->bodySize; in++) buf[in] = 0;
-			size = recv(this->fd, buf, this->bodySize, 0);
-			if (size == 0)
-			{
-				close(this->fd);
-				delete[] buf;
-				exit(1);
-			}
-			te.resize(size);
-			buf[size] = 0;
-			te = buf;
+			std::string buff = readSocket();
 			std::string serverName =
 				"localhost"; /* TODO: fix hardcoded serverName */
-			Request req(te, serverName, this->port);
+			Request req(buff, serverName, this->port);
+			while (!req.isFull())
+			{
+				buff = readSocket();
+				if (!req.appendBody(buff))
+					req = Request(buff, serverName, this->port);
+			}
 			Response r(getRoutes(), req);
 			ans = r.getRequest();
 			send(this->fd, ans.c_str(), ans.size(), 0);
@@ -58,7 +73,6 @@ void Server::launch()
 			size = r.get_size();
 			send(this->fd, (char *) &body[0], size, 0);
 			close(this->fd);
-			delete[] buf;
 		}
 	} while (status != 0);
 }

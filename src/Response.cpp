@@ -7,7 +7,6 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
-#include "parser_utils.hpp"
 
 bool mySort(const Route &A, const Route &B)
 {
@@ -37,7 +36,7 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
-	if (!findRoute(tmp, filename, req))
+	if (!findRoute(tmp))
 	{
 		status = 404;
 		filename = "errorPages/404.html";
@@ -104,13 +103,12 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 	return (name);
 }
 
-bool Response::findRoute(const std::vector<Route> &route,
-						 const std::string &file_name, const Request&	req)
+bool Response::findRoute(const std::vector<Route> &route)
 {
 	for (std::vector<Route>::size_type i = 0; i != route.size(); i++)
 	{
 		std::string::size_type pos;
-		pos = file_name.find(route[i].getUrl());
+		pos = this->filename.find(route[i].getUrl());
 		if (pos != std::string::npos)
 		{
 			std::cout << route[i].getUrl() << std::endl;

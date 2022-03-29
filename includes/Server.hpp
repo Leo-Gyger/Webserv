@@ -34,6 +34,8 @@ private:
 	//class Socket *s;
 	std::vector<class Socket> s;
 	std::vector<Route> routesList;
+
+	std::string readSocket() const;
 };
 
 #endif

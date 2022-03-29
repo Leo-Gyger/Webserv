@@ -8,6 +8,7 @@
 #include <string>
 
 Request::Request(std::string &header, std::string &svName, int svPort)
+	: full(false)
 {
 	std::istringstream stream(header);
 	size_t i;
@@ -45,11 +46,7 @@ Request::Request(std::string &header, std::string &svName, int svPort)
 		this->contentLength = header.substr(i, header.find("\r\n", i) - i);
 		this->body =
 			header.substr(header.find("\r\n\r\n", i) + 4, std::string::npos);
-	}
-	else 
-	{
-		i = header.find("\r\n\r\n");
-		this->body = header.substr(i, std::string::npos);
+		this->full = true;
 	}
 	return;
 }
@@ -68,12 +65,17 @@ std::string Request::getServerName() const { return this->serverName; }
 std::string Request::getServerPort() const { return this->serverPort; }
 std::string Request::getBody() const { return this->body; }
 
-int Request::getIntMethod() const {
-	if (this->method == "GET")
-		return (GET);
-	if (this->method == "POST")
-		return (POST);
-	if (this->method == "DELETE")
-		return (DELETE);
+bool Request::appendBody(const std::string &bd)
+{
+	body.append(bd);
+	return true;
+}
+
+int Request::getIntMethod() const
+{
+	if (this->method == "GET") return (GET);
+	if (this->method == "POST") return (POST);
+	if (this->method == "DELETE") return (DELETE);
 	return (-1);
 }
+bool Request::isFull() const { return (this->full); }
