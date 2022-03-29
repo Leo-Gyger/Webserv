@@ -6,7 +6,7 @@
 #define WEBSERV_ROUTE_HPP
 
 #include <iostream>
-
+#include <vector>
 #define GET 1   // 0b1
 #define POST 2  // 0b10
 #define DELETE 4// 0b100
@@ -40,6 +40,7 @@ public:
 
 	void setCGI(bool c);
 	bool getCGI() const;
+	std::vector<std::string> method;
 
 private:
 	std::string url;

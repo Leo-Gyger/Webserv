@@ -19,6 +19,7 @@ bool filterMethod(const Route &R, int method)
 	return (R.getMethods() & method);
 }
 
+
 Response::Response(const std::vector<Route> &route, const Request &req)
 	: body(), size_body()
 {
@@ -36,7 +37,7 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
-	if (!findRoute(tmp, filename))
+	if (!findRoute(tmp, filename, req))
 	{
 		status = 404;
 		filename = "errorPages/404.html";
@@ -104,7 +105,7 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 }
 
 bool Response::findRoute(const std::vector<Route> &route,
-						 const std::string &file_name)
+						 const std::string &file_name, const Request&	req)
 {
 	for (std::vector<Route>::size_type i = 0; i != route.size(); i++)
 	{
@@ -125,7 +126,7 @@ bool Response::is_valid(std::string &demande)
 	bool ret_val = true;
 
 	demande = this->r.getRoute() + demande.substr(this->r.getUrl().size());
-	std::cout << demande << std::endl;
+	//std::cout << demande << std::endl;
 	std::ifstream file(demande.c_str());
 	if (!file) ret_val = false;
 	file.close();

@@ -29,7 +29,6 @@ void Server::launch()
 			close(s[0].getServerFd());
 			exit(1);
 		}
-		std::cout << status << std::endl;
 		if (this->fd == -1)
 		{
 			close(this->fd);
@@ -46,11 +45,9 @@ void Server::launch()
 				delete[] buf;
 				exit(1);
 			}
-			std::cout << buf << std::endl;
 			te.resize(size);
 			buf[size] = 0;
 			te = buf;
-			std::cout << te << std::endl;
 			std::string serverName =
 				"localhost"; /* TODO: fix hardcoded serverName */
 			Request req(te, serverName, this->port);
