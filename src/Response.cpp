@@ -7,11 +7,16 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
-
+#include "parser_utils.hpp"
 
 bool mySort(const Route &A, const Route &B)
 {
 	return (A.getRoute().size() > B.getRoute().size());
+}
+
+bool filterMethod(const Route &R, int method)
+{
+	return (R.getMethods() & method);
 }
 
 Response::Response(const std::vector<Route> &route, const Request &req)
@@ -19,12 +24,16 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 {
 	bool is_dir;
 	int status = 200;
-
-	typedef  bool (Request::*filterMethods)(const Route &R) const;
-
-	filterMethods p = &Request::filterMethod;
+	int methods = req.getIntMethod();
 	std::vector<Route> tmp = route;
-	tmp.erase(std::remove_if(tmp.begin(), tmp.end(), p), tmp.end());
+
+	for (std::vector<Route>::iterator it = tmp.begin(); it != tmp.end(); )
+	{
+		if (!filterMethod(*it, methods))
+			it = tmp.erase(it);
+		else
+			++it;
+	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
 	if (!findRoute(tmp, filename))

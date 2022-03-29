@@ -59,7 +59,12 @@ std::string Request::getServerName() const { return this->serverName; }
 std::string Request::getServerPort() const { return this->serverPort; }
 std::string Request::getBody() const { return this->body; }
 
-bool Request::filterMethod(const Route &R) const
-{
-	return (R.getMethods() & ft_stoi(this->method));
+int Request::getIntMethod() const {
+	if (this->method == "GET")
+		return (GET);
+	if (this->method == "POST")
+		return (POST);
+	if (this->method == "DELETE")
+		return (DELETE);
+	return (-1);
 }
