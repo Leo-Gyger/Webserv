@@ -11,10 +11,16 @@ void Server::launch()
 	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
-	struct pollfd fds = {};
+	struct pollfd *fds = new struct pollfd [s.size()];
 	int status;
-	fds.events = POLLPRI | POLLOUT;
-	do {
+	for (int i = 0; i != s.size(); ++i)
+	{
+		fds.events[i] = POLLIN | POLLOUT;
+		fds.fd = s[i].getServerFd();
+	}
+	status = poll(fds, s.size(), 1000)
+	for (int i = 0; i != status; ++i)
+	{
 		for (size_t i = 0; i < s.size(); i++)
 		{
 			this->fd =
@@ -22,7 +28,6 @@ void Server::launch()
 					   (socklen_t *) &s[i].addrlen);
 			fds.fd = this->fd;
 		}
-		status = poll(&fds, 1, 1000);
 		if (status == -1)
 		{
 			close(this->fd);
@@ -60,7 +65,8 @@ void Server::launch()
 			close(this->fd);
 			delete[] buf;
 		}
-	} while (status != 0);
+	}
+	delete[] fds;
 }
 
 Server::~Server() { std::cout << "destructed" << std::endl; }
