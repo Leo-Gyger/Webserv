@@ -33,21 +33,25 @@ void Server::launch()
 	std::string ans;
 	struct pollfd *fds = new struct pollfd [s.size()];
 	int status;
-	for (int i = 0; i != s.size(); ++i)
+	for (size_t i = 0; i != s.size(); ++i)
 	{
-		fds.events[i] = POLLIN | POLLOUT;
-		fds.fd = s[i].getServerFd();
+		fds[i].events = POLLIN;
+		fds[i].fd = s[i].getServerFd();
 	}
-	status = poll(fds, s.size(), 1000)
+	status = poll(fds, fds[0].fd, 10000);
+	std::cout << status << std::endl;
 	for (int i = 0; i != status; ++i)
 	{
-		for (size_t i = 0; i < s.size(); i++)
+		if (!(fds[i].revents & fds[i].events))
 		{
-			this->fd =
-				accept(s[i].getServerFd(), (struct sockaddr *) &s[i].address,
-					   (socklen_t *) &s[i].addrlen);
-			fds.fd = this->fd;
+			delete[] fds;
+			return;
 		}
+	}
+	for (int i = status - 1; i != 1; i = status - 1)
+	{
+		this->fd = accept(s[i].getServerFd(), (struct sockaddr *) &s[i].address,
+					(socklen_t *) &s[i].addrlen);
 		if (status == -1)
 		{
 			close(this->fd);
@@ -59,26 +63,24 @@ void Server::launch()
 			close(this->fd);
 			exit(1);
 		}
-		for (int i = 0; i != status; i++)
+		std::string buff = readSocket();
+		std::string serverName =
+			"localhost"; /* TODO: fix hardcoded serverName */
+		Request req(buff, serverName, this->port);
+		while (!req.isFull())
 		{
-			std::string buff = readSocket();
-			std::string serverName =
-				"localhost"; /* TODO: fix hardcoded serverName */
-			Request req(buff, serverName, this->port);
-			while (!req.isFull())
-			{
-				buff = readSocket();
-				if (!req.appendBody(buff))
-					req = Request(buff, serverName, this->port);
-			}
-			Response r(getRoutes(), req);
-			ans = r.getRequest();
-			send(this->fd, ans.c_str(), ans.size(), 0);
-			body = r.get_body();
-			size = r.get_size();
-			send(this->fd, (char *) &body[0], size, 0);
-			close(this->fd);
+			buff = readSocket();
+			if (!req.appendBody(buff))
+			req = Request(buff, serverName, this->port);
 		}
+		Response r(getRoutes(), req);
+		ans = r.getRequest();
+		std::cout << ans << std::endl;
+		send(this->fd, ans.c_str(), ans.size(), 0);
+		body = r.get_body();
+		size = r.get_size();
+		send(this->fd, (char *) &body[0], size, 0);
+		close(this->fd);
 	}
 	delete[] fds;
 }

@@ -17,7 +17,6 @@ Request::Request(std::string &header, std::string &svName, int svPort)
 	this->serverPort = ft_itos(svPort);
 
 	std::getline(stream, this->method, ' ');
-	//std::cout << this->method << std::endl;
 	std::getline(stream, this->route, ' ');
 	std::cout << this->route << std::endl;
 	i = this->route.find("?");

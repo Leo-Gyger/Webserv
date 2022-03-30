@@ -29,6 +29,7 @@ endif
 MAKEFLAGS += --output-sync=target
 MAKEFLAGS += --no-print-directory
 MAKEFLAGS += -D_DAR-WIN_UNLIMITED_SELECT
+MAKEFLAGS += -fsanitize=address
 
 NAME ?= webserv
 
