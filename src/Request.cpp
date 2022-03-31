@@ -27,7 +27,6 @@ Request::Request(std::string &header, std::string &svName, int svPort)
 	}
 
 	std::getline(stream, this->protocol, '\r');
-
 	i = header.find("Authorization: ") +
 		std::string("Authorization: ").length();
 	this->authorization = header.substr(i, header.find("\r\n", i) - i);

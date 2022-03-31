@@ -18,7 +18,6 @@ bool filterMethod(const Route &R, int method)
 	return (R.getMethods() & method);
 }
 
-
 Response::Response(const std::vector<Route> &route, const Request &req)
 	: body(), size_body()
 {
@@ -44,7 +43,6 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 	is_dir = *(this->filename.end() - 1) == '/';
 	if (is_dir)
 	{
-		std::cout << "entered" << std::endl;
 		this->request = redirection(r.getDefaultFile());
 		return;
 	}
@@ -124,7 +122,6 @@ bool Response::is_valid(std::string &demande)
 	bool ret_val = true;
 
 	demande = this->r.getRoute() + demande.substr(this->r.getUrl().size());
-	//std::cout << demande << std::endl;
 	std::ifstream file(demande.c_str());
 	if (!file) ret_val = false;
 	file.close();

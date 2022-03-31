@@ -38,8 +38,7 @@ void Server::launch()
 		fds[i].events = POLLIN;
 		fds[i].fd = s[i].getServerFd();
 	}
-	status = poll(fds, fds[0].fd, 10000);
-	std::cout << status << std::endl;
+	status = poll(fds,s.size(), 10000);
 	for (int i = 0; i != status; ++i)
 	{
 		if (!(fds[i].revents & fds[i].events))
@@ -61,7 +60,7 @@ void Server::launch()
 		if (this->fd == -1)
 		{
 			close(this->fd);
-			exit(1);
+			return ;
 		}
 		std::string buff = readSocket();
 		std::string serverName =
