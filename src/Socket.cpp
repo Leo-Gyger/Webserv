@@ -36,7 +36,10 @@ void Socket::listening(int bl) const
 	std::cout << "Server is listening on port " << this->port << std::endl;
 }
 
-Socket::~Socket() { std::cout << "destructed" << std::endl; }
+Socket::~Socket() {
+	if (this->server_fd != -1 && this->server_fd != 0)
+		close(this->server_fd);
+	std::cout << "destructed" << std::endl; }
 
 Socket &Socket::operator=(const Socket &obj)
 {

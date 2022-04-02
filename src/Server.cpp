@@ -3,6 +3,7 @@
 #include "parser_utils.hpp"
 #include <poll.h>
 #include <vector>
+
 Server::Server() : port(80), fd(), bodySize(3000) {}
 
 std::string Server::readSocket() const
@@ -25,15 +26,22 @@ std::string Server::readSocket() const
 	return (te);
 }
 
+void	leave(int sig)
+{
+	(void)sig;
+	std::exit(1);
+}
+
 void Server::launch()
 {
 	std::string te;
 	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
-	struct pollfd *fds = new struct pollfd [s.size()];
+	fds = new struct pollfd [s.size()];
 	int status;
-	for (size_t i = 0; i != s.size(); ++i)
+	std::signal(SIGINT,&leave);
+	for (size_t i = 0; i != s.size(); i++)
 	{
 		fds[i].events = POLLIN;
 		fds[i].fd = s[i].getServerFd();
@@ -43,7 +51,6 @@ void Server::launch()
 	{
 		if (!(fds[i].revents & fds[i].events))
 		{
-			delete[] fds;
 			return;
 		}
 	}
@@ -74,17 +81,21 @@ void Server::launch()
 		}
 		Response r(getRoutes(), req);
 		ans = r.getRequest();
-		std::cout << ans << std::endl;
 		send(this->fd, ans.c_str(), ans.size(), 0);
 		body = r.get_body();
 		size = r.get_size();
 		send(this->fd, (char *) &body[0], size, 0);
 		close(this->fd);
 	}
-	delete[] fds;
 }
 
-Server::~Server() { std::cout << "destructed" << std::endl; }
+Server::~Server() 
+{
+	close (this->fd);
+	if (fds[0].events == POLLIN)
+		delete[] fds;
+	std::cout << "Server destructed" << std::endl;
+}
 
 void Server::createSocket()
 {

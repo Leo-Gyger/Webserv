@@ -7,7 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-
+#include <csignal>
 class Server
 {
 public:
@@ -29,6 +29,7 @@ public:
 
 private:
 	int port;
+	struct pollfd *fds;
 	int fd;
 	int bodySize;
 	//class Socket *s;
