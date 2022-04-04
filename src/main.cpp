@@ -14,10 +14,14 @@ int	loop(std::vector<Server>&	sl)
 	}
 	sl[0].listen();
 	sl[1].listen();
+//	sl[0].accepting();
 	do
 	{
 		status = poll(nfds, sl.size(), 10000);
+		sl[1].accepting();
 		sl[1].launch();
+		sl[0].accepting();
+		sl[0].launch();
 	} while (status > 0 );
 	return (0);
 }

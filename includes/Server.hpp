@@ -15,7 +15,7 @@ public:
 	~Server();
 
 	void launch();
-
+	void accepting();
 	void createSocket(const std::string&	addr);
 
 	void setPort(int p);

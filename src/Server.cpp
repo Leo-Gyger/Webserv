@@ -32,14 +32,17 @@ void	leave(int sig)
 	std::exit(1);
 }
 
+void Server::accepting()
+{
+		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
+					(socklen_t *) &s->addrlen);
+}
 void Server::launch()
 {
 	std::string te;
 	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
-		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
-					(socklen_t *) &s->addrlen);
 		if (this->fd == -1)
 		{
 			close(this->fd);
