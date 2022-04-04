@@ -8,12 +8,11 @@ Socket::Socket(int p, const std::string&	addr) : address(), port(p), response_fd
 	std::cout << "Socket constructor" << std::endl;
 	int val = 1;
 	this->address.sin_family = AF_INET;
-	this->address.sin_addr.s_addr = inet_addr(addr.c_str());
+	this->address.sin_addr.s_addr = htonl(INADDR_ANY);
 	this->address.sin_port = htons(port);
 	(void)addr;
 	this->addrlen = sizeof(address);
 	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	std::cout << this->server_fd << std::endl;
 	setsockopt(this->server_fd, SOL_SOCKET,SO_REUSEADDR,&val,1);
 	if (this->server_fd == -1)
 	{

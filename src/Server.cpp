@@ -38,8 +38,8 @@ void Server::launch()
 	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
-		this->fd = accept(s[0].getServerFd(), (struct sockaddr *) &s[0].address,
-					(socklen_t *) &s[0].addrlen);
+		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
+					(socklen_t *) &s->addrlen);
 		if (this->fd == -1)
 		{
 			close(this->fd);
@@ -67,21 +67,22 @@ void Server::launch()
 Server::~Server() 
 {
 	close (this->fd);
-	if (fds[0].events == POLLIN)
-		delete[] fds;
 	std::cout << "Server destructed" << std::endl;
 }
 
 int	Server::getFd() const
 {
-	return (this->s[0].getServerFd());
+	return (this->s->getServerFd());
 }
 
 void Server::createSocket(const std::string&	addr)
 {
-	this->s.insert(this->s.begin(), Socket(this->port,addr));
-	this->s.back().binding();
-	this->s.back().listening(10);
+	this->s = new Socket(this->port,addr);
+	this->s->binding();
+}
+void	Server::listen()
+{
+	this->s->listening(10);
 }
 
 void Server::setPort(int p) { this->port = p; }

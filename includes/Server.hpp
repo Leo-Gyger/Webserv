@@ -24,15 +24,14 @@ public:
 	void setBody(int b);
 	int getBody() const;
 	int	getFd() const;
+	void	listen();
 	void addRoute(const Route &r);
 	std::vector<Route> getRoutes() const;
 private:
 	int port;
-	struct pollfd *fds;
 	int fd;
 	int bodySize;
-	//class Socket *s;
-	std::vector<class Socket> s;
+	class Socket *s;
 	std::vector<Route> routesList;
 
 	std::string readSocket() const;

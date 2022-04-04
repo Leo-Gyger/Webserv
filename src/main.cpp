@@ -12,9 +12,13 @@ int	loop(std::vector<Server>&	sl)
 		nfds[i].events = POLLIN;
 		nfds[i].fd = sl[i].getFd();
 	}
-	status = poll(nfds, sl.size(), 10000);
-	for (size_t	i = 0; i != 1; i = status - 1)
-		sl[i].launch();
+	sl[0].listen();
+	sl[1].listen();
+	do
+	{
+		status = poll(nfds, sl.size(), 10000);
+		sl[1].launch();
+	} while (status > 0 );
 	return (0);
 }
 
