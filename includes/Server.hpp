@@ -16,17 +16,16 @@ public:
 
 	void launch();
 
-	void createSocket();
+	void createSocket(const std::string&	addr);
 
 	void setPort(int p);
 	int getPort() const;
 
 	void setBody(int b);
 	int getBody() const;
-
+	int	getFd() const;
 	void addRoute(const Route &r);
-	std::vector<Route> getRoutes();
-
+	std::vector<Route> getRoutes() const;
 private:
 	int port;
 	struct pollfd *fds;

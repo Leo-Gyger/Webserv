@@ -4,7 +4,7 @@
 #include <poll.h>
 #include <vector>
 
-Server::Server() : port(80), fd(), bodySize(3000) {}
+Server::Server() : port(200), fd(), bodySize(3000) {}
 
 std::string Server::readSocket() const
 {
@@ -38,32 +38,8 @@ void Server::launch()
 	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
-	fds = new struct pollfd [s.size()];
-	int status;
-	std::signal(SIGINT,&leave);
-	for (size_t i = 0; i != s.size(); i++)
-	{
-		fds[i].events = POLLIN;
-		fds[i].fd = s[i].getServerFd();
-	}
-	status = poll(fds,s.size(), 10000);
-	for (int i = 0; i != status; ++i)
-	{
-		if (!(fds[i].revents & fds[i].events))
-		{
-			return;
-		}
-	}
-	for (int i = status - 1; i != 1; i = status - 1)
-	{
-		this->fd = accept(s[i].getServerFd(), (struct sockaddr *) &s[i].address,
-					(socklen_t *) &s[i].addrlen);
-		if (status == -1)
-		{
-			close(this->fd);
-			close(s[0].getServerFd());
-			exit(1);
-		}
+		this->fd = accept(s[0].getServerFd(), (struct sockaddr *) &s[0].address,
+					(socklen_t *) &s[0].addrlen);
 		if (this->fd == -1)
 		{
 			close(this->fd);
@@ -86,7 +62,6 @@ void Server::launch()
 		size = r.get_size();
 		send(this->fd, (char *) &body[0], size, 0);
 		close(this->fd);
-	}
 }
 
 Server::~Server() 
@@ -97,11 +72,16 @@ Server::~Server()
 	std::cout << "Server destructed" << std::endl;
 }
 
-void Server::createSocket()
+int	Server::getFd() const
 {
-	this->s.insert(this->s.begin(), Socket(this->port));
-	this->s[0].binding();
-	this->s[0].listening(10);
+	return (this->s[0].getServerFd());
+}
+
+void Server::createSocket(const std::string&	addr)
+{
+	this->s.insert(this->s.begin(), Socket(this->port,addr));
+	this->s.back().binding();
+	this->s.back().listening(10);
 }
 
 void Server::setPort(int p) { this->port = p; }
@@ -111,4 +91,4 @@ void Server::setBody(int b) { this->bodySize = b; }
 int Server::getBody() const { return this->bodySize; }
 
 void Server::addRoute(const Route &r) { routesList.push_back(r); }
-std::vector<Route> Server::getRoutes() { return this->routesList; }
+std::vector<Route> Server::getRoutes() const { return this->routesList; }

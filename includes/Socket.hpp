@@ -17,7 +17,7 @@
 class Socket
 {
 public:
-	explicit Socket(int p);
+	explicit Socket(int p,const std::string&	addr);
 
 	~Socket();
 
