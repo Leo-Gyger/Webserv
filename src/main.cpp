@@ -1,6 +1,7 @@
 #include "Server.hpp"
 #include "parser.hpp"
 #include <poll.h>
+
 int	loop(std::vector<Server>&	sl)
 {
 	struct	pollfd	*nfds = new pollfd [sl.size()];
@@ -18,8 +19,9 @@ int	loop(std::vector<Server>&	sl)
 	do
 	{
 		status = poll(nfds, sl.size(), 10000);
-		sl[1].accepting();
-		sl[1].launch();
+		std::cout << status << std::endl;
+		//sl[1].accepting();
+		//sl[1].launch();
 		sl[0].accepting();
 		sl[0].launch();
 	} while (status > 0 );

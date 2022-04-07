@@ -17,7 +17,6 @@ std::string Server::readSocket() const
 	{
 		close(this->fd);
 		delete[] buf;
-		exit(1);//todo: we should not exit
 	}
 	te.resize(size);
 	buf[size] = 0;
@@ -34,8 +33,14 @@ void	leave(int sig)
 
 void Server::accepting()
 {
+	struct	pollfd fds;
+
+	fds.events = POLLOUT;
 		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
 					(socklen_t *) &s->addrlen);
+	fds.fd = this->fd;
+	fcntl(this->fd,F_SETFL, O_NONBLOCK);
+	poll(&fds,this->fd + 1, 10000);
 }
 void Server::launch()
 {
