@@ -19,17 +19,16 @@ bool filterMethod(const Route &R, int method)
 }
 
 Response::Response(const std::vector<Route> &route, const Request &req)
-	: body(), size_body()
+	: response()
 {
 	bool is_dir;
 	int status = 200;
 	int methods = req.getIntMethod();
 	std::vector<Route> tmp = route;
 
-	for (std::vector<Route>::iterator it = tmp.begin(); it != tmp.end(); )
+	for (std::vector<Route>::iterator it = tmp.begin(); it != tmp.end();)
 	{
-		if (!filterMethod(*it, methods))
-			it = tmp.erase(it);
+		if (!filterMethod(*it, methods)) it = tmp.erase(it);
 		else
 			++it;
 	}
@@ -43,12 +42,12 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 	is_dir = *(this->filename.end() - 1) == '/';
 	if (is_dir)
 	{
-		this->request = redirection(r.getDefaultFile());
+		this->redirection(r.getDefaultFile());
 		return;
 	}
 	if (r.getCGI())
 	{
-		this->request = Response::callCGI(req);
+		this->callCGI(req);
 		return;
 	}
 	if (!is_valid(filename))
@@ -57,35 +56,22 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 		filename = "errorPages/404.html";
 	}
 	form_body(filename);
-	this->request = "HTTP/1.1 " + createStatusLine(status) +
-					"\r\n"
-					"Date: " +
-					Date() +
-					"\r\n"
-					"Content-Length: " +
-					ft_itos(this->size_body) +
-					"\r\n"
-					"Content-Type: " +
-					findType(filename) +
-					"\r\n"
-					"charset=UTF-8\r\n\r\n";
+
+	this->response.setProtocol("HTTP/1.1");
+	this->response.setMethod(createStatusLine(status));
+	this->response.setDate(Response::Date());
+	this->response.setContentType(findType(filename));
 }
 
-std::string Response::redirection(const std::string &location)
+void Response::redirection(const std::string &location)
 {
 	std::string ret;
 
-	ret = "HTTP/1.1 " + createStatusLine(301) +
-		  "\r\n"
-		  "Date: " +
-		  this->Date() +
-		  "\r\n"
-		  "Location: " +
-		  location +
-		  "\r\n"
-		  "Connection: close\r\n"
-		  "\r\n";
-	return (ret);
+	this->response.setProtocol("HTTP/1.1");
+	this->response.setMethod(createStatusLine(301));
+	this->response.setDate(Response::Date());
+	this->response.setLocation(location);
+	this->response.setConnection("close");
 }
 
 std::string Response::createFname(const std::string &header, bool &is_dir)
@@ -150,12 +136,14 @@ void Response::form_body(const std::string &path)
 	file.seekg(0, std::ios::end);
 	size = file.tellg();
 	file.seekg(0, std::ios::beg);
-	this->body = std::vector<unsigned char>(size);
-	file.read((char *) &this->body[0], size);
-	this->size_body = (int) size;
+	std::vector<unsigned char> body(size);
+
+	file.read((char *) &body[0], size);
+	this->response.setBody(body);
+	this->response.setContentLength(ft_itos(size));
 }
 
-std::string Response::findType(std::string demande)
+std::string Response::findType(std::string req)
 {
 	std::map<std::string, std::string> extension;
 	std::map<std::string, std::string>::iterator it;
@@ -169,18 +157,20 @@ std::string Response::findType(std::string demande)
 	extension[".gif"] = "image/gif";
 	extension[".ts"] = "application/typescript";
 	std::string::size_type i, n;
-	i = demande.find('.');
-	n = demande.find(' ', i);
-	std::istringstream ss(demande.substr(i, n));
-	std::getline(ss, demande, ' ');
-	it = extension.find(demande);
+	i = req.find('.');
+	n = req.find(' ', i);
+	std::istringstream ss(req.substr(i, n));
+	std::getline(ss, req, ' ');
+	it = extension.find(req);
 	if (it == extension.end()) ret = "application/octet-stream";
 	else
 		ret = it->second;
+	if (req == ".html" || req == ".css" || req == ".ts")
+		ret += "\r\ncharset=UTF-8";
 	return (ret);
 }
 
-std::string Response::callCGI(const Request &req)
+void Response::callCGI(const Request &req)
 {
 	int fd[2];
 	std::string buffer;
@@ -188,15 +178,17 @@ std::string Response::callCGI(const Request &req)
 	std::map<std::string, std::string> meta_var = Response::buildCGIEnv(req);
 
 	if (pipe(fd) == -1) exit(EXIT_FAILURE);
-	write(fd[1], req.getBody().c_str(), req.getBody().length());
+	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
 	get_gci(
 		buffer,
 		this->r.getRoute() +
 			req.getRoute().substr(this->r.getUrl().length(), std::string::npos),
 		fd, meta_var);
+	std::string svName = "localhost";
+	this->response.fill(buffer, svName, 8080);
+
 	std::cout << "BUFFER:" << buffer << std::endl;
-	return (buffer);
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)
@@ -238,26 +230,20 @@ std::string Response::Date()
 	return (str);
 }
 
-const std::vector<unsigned char> &Response::get_body() const
+
+Response::Response(const Response &t) : response(t.response) {}
+
+Request &Response::getResponse() { return this->response; }
+
+std::ostream &operator<<(std::ostream &os, Response &d)
 {
-	return (this->body);
-}
-
-int Response::get_size() const { return this->size_body; }
-
-Response::Response(const Response &t) : request(t.request), size_body() {}
-
-const std::string &Response::getRequest() const { return this->request; }
-
-std::ostream &operator<<(std::ostream &os, const Response &d)
-{
-	os << d.getRequest() << std::endl;
+	os << d.getResponse().toString() << std::endl;
 	return (os);
 }
 
 Response &Response::operator=(const Response &t)
 {
-	this->request = t.request;
+	this->response = t.response;
 	return (*this);
 }
 

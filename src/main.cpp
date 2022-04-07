@@ -10,11 +10,11 @@ int	loop(std::vector<Server>&	sl)
 		sl[i].createSocket("127.0.0.1");
 		sl[i].listen();
 	}
+	sl[0].listen();
 	while (1)
 	{
 		for (size_t i = 0; i != sl.size(); ++i)
 		{
-			sl[i].listen();
 			sl[i].accepting();
 			sl[i].launch();
 		}

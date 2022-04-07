@@ -7,8 +7,15 @@
 #include <iostream>
 #include <string>
 
+Request::Request() {}
+
 Request::Request(std::string &header, std::string &svName, int svPort)
 	: full(false)
+{
+	this->fill(header, svName, svPort);
+}
+
+void Request::fill(std::string &header, std::string &svName, int svPort)
 {
 	std::istringstream stream(header);
 	size_t i;
@@ -42,12 +49,16 @@ Request::Request(std::string &header, std::string &svName, int svPort)
 	if (i != std::string::npos)
 	{
 		this->contentLength = header.substr(i, header.find("\r\n", i) - i);
-		this->body =
-			header.substr(header.find("\r\n\r\n", i) + 4, std::string::npos);
+		std::string val("\r\n\r\n");
+		std::string::iterator it = std::find_first_of(header.begin() + i, header.end(), val.begin(),  val.end()) + 4;
+		this->body.insert(this->body.begin(), it, header.end());
+//		this->body =
+//			header.substr(header.find("\r\n\r\n", i) + 4, std::string::npos);
 		this->full = true;
 	}
 	return;
 }
+
 
 Request::~Request() {}
 
@@ -61,11 +72,11 @@ std::string Request::getContentType() const { return this->contentType; }
 std::string Request::getQueryString() const { return this->queryString; }
 std::string Request::getServerName() const { return this->serverName; }
 std::string Request::getServerPort() const { return this->serverPort; }
-std::string Request::getBody() const { return this->body; }
+std::vector<unsigned char> Request::getBody() const { return this->body; }
 
 bool Request::appendBody(const std::string &bd)
 {
-	body.append(bd);
+	this->body.insert(this->body.end(), bd.begin(), bd.end());
 	return true;
 }
 
@@ -77,3 +88,41 @@ int Request::getIntMethod() const
 	return (-1);
 }
 bool Request::isFull() const { return (this->full); }
+std::string Request::toString() const
+{
+	std::string ret = this->protocol + " " + this->method +
+					  "\r\n"
+					  "Date: " +
+					  this->date + "\r\n";
+
+	if (!this->location.empty()) ret += "Location: " + this->location + "\r\n";
+	if (!this->contentType.empty())
+		ret += "Content-Type: " + this->contentType + "\r\n";
+	if (!this->contentLength.empty())
+		ret += "Content-Length: " + this->contentLength + "\r\n";
+	if (!this->connection.empty())
+		ret += "Connection: " + this->connection + "\r\n" + "\r\n";
+	ret += "\r\n\r\n";
+	return (ret);
+}
+
+void Request::setMethod(const std::string &m) { this->method = m; }
+void Request::setRoute(const std::string &r) { this->route = r; }
+void Request::setProtocol(const std::string &p) { this->protocol = p; }
+void Request::setUserAgent(const std::string &ua) { this->userAgent = ua; }
+void Request::setAuthorization(const std::string &a)
+{
+	this->authorization = a;
+}
+void Request::setContentLength(const std::string &cl)
+{
+	this->contentLength = cl;
+}
+void Request::setContentType(const std::string &ct) { this->contentType = ct; }
+void Request::setQueryString(const std::string &qs) { this->queryString = qs; }
+void Request::setServerName(const std::string &sn) { this->serverName = sn; }
+void Request::setServerPort(const std::string &sp) { this->serverPort = sp; }
+void Request::setBody(const std::vector<unsigned char> &b) { this->body.insert(this->body.begin(), b.begin(), b.end()); }
+void Request::setDate(const std::string &d) { this->date = d; }
+void Request::setLocation(const std::string &l) { this->location = l; }
+void Request::setConnection(const std::string &c) { this->connection = c; }

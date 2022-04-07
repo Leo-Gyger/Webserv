@@ -61,7 +61,6 @@ void Server::accepting()
 void Server::launch()
 {
 	std::string te;
-	size_t size;
 	std::vector<unsigned char> body;
 	std::string ans;
 		if (this->fd == -1)
@@ -80,11 +79,10 @@ void Server::launch()
 			req = Request(buff, serverName, this->port);
 		}
 		Response r(getRoutes(), req);
-		ans = r.getRequest();
+		ans = r.getResponse().toString();
 		send(this->fd, ans.c_str(), ans.size(), 0);
-		body = r.get_body();
-		size = r.get_size();
-		send(this->fd, (char *) &body[0], size, 0);
+		body = r.getResponse().getBody();
+		send(this->fd, &body[0], body.size(), 0);
 		close(this->fd);
 }
 

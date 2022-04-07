@@ -19,20 +19,14 @@ public:
 
 	Response &operator=(const Response &t);
 
-	const std::string &getRequest() const;
+	Request &getResponse();
 
-	const std::vector<unsigned char> &get_body() const;
-
-	int get_size() const;
-
-	std::string callCGI(const Request &req);
+	void callCGI(const Request &req);
 
 	static std::map<std::string, std::string> buildCGIEnv(const Request &req);
 
 private:
-	std::string request;
-	std::vector<unsigned char> body;
-	int size_body;
+	Request response;
 	std::string filename;
 	Route r;
 
@@ -41,7 +35,7 @@ private:
 	void form_body(const std::string &path);
 	static std::string findType(std::string demande);
 	static std::string Date();
-	std::string redirection(const std::string &location);
+	void redirection(const std::string &location);
 	static std::string createFname(const std::string &header, bool &is_dir);
 	bool findRoute(const std::vector<Route> &route);
 	bool is_valid(std::string &demande);

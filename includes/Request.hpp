@@ -12,9 +12,12 @@
 class Request
 {
 public:
+	Request();
+
 	Request(std::string &header, std::string &svName, int svPort);
 	~Request();
 
+	void fill(std::string &header, std::string &svName, int svPort);
 	std::string getMethod() const;
 	int getIntMethod() const;
 	std::string getRoute() const;
@@ -26,11 +29,28 @@ public:
 	std::string getQueryString() const;
 	std::string getServerName() const;
 	std::string getServerPort() const;
-	std::string getBody() const;
+	std::vector<unsigned char> getBody() const;
+	std::string getDate() const;
 	bool isFull() const;
+	std::string toString() const;
 
 	bool appendBody(const std::string &bd);
 
+	void setMethod(const std::string &);
+	void setRoute(const std::string &);
+	void setProtocol(const std::string &);
+	void setUserAgent(const std::string &);
+	void setAuthorization(const std::string &);
+	void setContentLength(const std::string &);
+	void setContentType(const std::string &);
+	void setQueryString(const std::string &);
+	void setServerName(const std::string &);
+	void setServerPort(const std::string &);
+	void setBody(const std::vector<unsigned char> &);
+
+	void setDate(const std::string &);
+	void setLocation(const std::string &);
+	void setConnection(const std::string &);
 private:
 	std::string method;
 	std::string route;
@@ -42,7 +62,12 @@ private:
 	std::string queryString;
 	std::string serverName;
 	std::string serverPort;
-	std::string body;
+	std::vector<unsigned char> body;
+
+	std::string date;
+	std::string location;
+	std::string connection;
+
 	bool full;
 };
 
