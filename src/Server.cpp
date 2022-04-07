@@ -5,14 +5,26 @@
 #include <vector>
 
 Server::Server() : port(200), fd(), bodySize(3000) {}
-
+void polling(struct pollfd	fds)
+{
+	int	status;
+	do
+	{
+		status = poll(&fds, 1, 100);
+	} while (status == 0 && fds.events != fds.revents);
+}
 std::string Server::readSocket() const
 {
 	std::string te;
-
+	struct pollfd	fds;
+	fds.fd = this->fd;
+	fds.events = POLLIN;
+	polling(fds);
 	char *buf = new char[this->bodySize];
-	for (int in = 0; in != this->bodySize; in++) buf[in] = 0;
-	size_t size = recv(this->fd, buf, this->bodySize, 0);
+	for (int in = 0; in != this->bodySize; in++)
+		buf[in] = 0;
+	int size = recv(this->fd, buf, this->bodySize, 0);
+	std::cout << size << std::endl;
 	if (size == 0)
 	{
 		close(this->fd);
@@ -34,13 +46,17 @@ void	leave(int sig)
 void Server::accepting()
 {
 	struct	pollfd fds;
+	int	status;
 
-	fds.events = POLLOUT;
+	fds.events = POLLIN;
+	fds.fd = s->getServerFd();
+	do
+	{
+		status = poll(&fds,1, 10000);
+		std::cout << status << std::endl;
+	} while (status == 0 || fds.events != fds.revents);
 		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
 					(socklen_t *) &s->addrlen);
-	fds.fd = this->fd;
-	fcntl(this->fd,F_SETFL, O_NONBLOCK);
-	poll(&fds,this->fd + 1, 10000);
 }
 void Server::launch()
 {

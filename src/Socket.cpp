@@ -13,7 +13,8 @@ Socket::Socket(int p, const std::string&	addr) : address(), port(p), response_fd
 	(void)addr;
 	this->addrlen = sizeof(address);
 	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	setsockopt(this->server_fd, SOL_SOCKET,SO_REUSEADDR,&val,1);
+	setsockopt(this->server_fd, SOL_SOCKET,SO_REUSEADDR,(char *)&val,sizeof(val));
+	fcntl(this->server_fd, F_SETFL, O_NONBLOCK);
 	if (this->server_fd == -1)
 	{
 		std::cerr << "Error creating the socket" << std::endl;

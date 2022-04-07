@@ -4,27 +4,21 @@
 
 int	loop(std::vector<Server>&	sl)
 {
-	struct	pollfd	*nfds = new pollfd [sl.size()];
-	int status;
 
 	for (size_t i = 0; i != sl.size(); i++)
 	{
 		sl[i].createSocket("127.0.0.1");
-		nfds[i].events = POLLIN;
-		nfds[i].fd = sl[i].getFd();
+		sl[i].listen();
 	}
-	sl[0].listen();
-	sl[1].listen();
-//	sl[0].accepting();
-	do
+	while (1)
 	{
-		status = poll(nfds, sl.size(), 10000);
-		std::cout << status << std::endl;
-		//sl[1].accepting();
-		//sl[1].launch();
-		sl[0].accepting();
-		sl[0].launch();
-	} while (status > 0 );
+		for (size_t i = 0; i != sl.size(); ++i)
+		{
+			sl[i].listen();
+			sl[i].accepting();
+			sl[i].launch();
+		}
+	}
 	return (0);
 }
 

@@ -47,7 +47,7 @@ CXXFLAGS += -std=c++98 -pedantic
 CXXFLAGS += -O3 -march=native
 CXXFLAGS += -g3
 CXXFLAGS += -fdiagnostics-color
-#CXXFLAGS += -fsanitize=address -v
+CXXFLAGS += -fsanitize=address -v
 
 all:
 	@$(MAKE) -j$(NPROC) $(NAME)
