@@ -5,33 +5,33 @@
 #include <vector>
 
 Server::Server() : port(200), fd(), bodySize(3000) {}
-void polling(struct pollfd	fds)
+void npolling(struct pollfd	*fds, int size)
 {
 	int	status;
 	do
 	{
-		status = poll(&fds, 1, 100);
-	} while (status == 0 && fds.events != fds.revents);
-}
+		status = poll(fds, size, 1);
+	} while (status == 0 && fds->events != fds->revents);
+} 
 std::string Server::readSocket() const
 {
 	std::string te;
 	struct pollfd	fds;
 	fds.fd = this->fd;
 	fds.events = POLLIN;
-	polling(fds);
+	npolling(&fds, 1);
 	char *buf = new char[this->bodySize];
 	for (int in = 0; in != this->bodySize; in++)
 		buf[in] = 0;
 	int size = recv(this->fd, buf, this->bodySize, 0);
 	std::cout << size << std::endl;
-	if (size == 0)
+	if (size <= 0)
 	{
 		close(this->fd);
 		delete[] buf;
+		return (std::string());
 	}
 	te.resize(size);
-	buf[size] = 0;
 	te = buf;
 	delete[] buf;
 	return (te);
@@ -45,16 +45,6 @@ void	leave(int sig)
 
 void Server::accepting()
 {
-	struct	pollfd fds;
-	int	status;
-
-	fds.events = POLLIN;
-	fds.fd = s->getServerFd();
-	do
-	{
-		status = poll(&fds,1, 10000);
-		std::cout << status << std::endl;
-	} while (status == 0 || fds.events != fds.revents);
 		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
 					(socklen_t *) &s->addrlen);
 }
