@@ -166,7 +166,7 @@ std::string Response::findType(std::string req)
 	else
 		ret = it->second;
 	if (req == ".html" || req == ".css" || req == ".ts")
-		ret += "\r\ncharset=UTF-8";
+		ret += "; charset=UTF-8";
 	return (ret);
 }
 

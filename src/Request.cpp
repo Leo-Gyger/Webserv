@@ -101,8 +101,8 @@ std::string Request::toString() const
 	if (!this->contentLength.empty())
 		ret += "Content-Length: " + this->contentLength + "\r\n";
 	if (!this->connection.empty())
-		ret += "Connection: " + this->connection + "\r\n" + "\r\n";
-	ret += "\r\n\r\n";
+		ret += "Connection: " + this->connection + "\r\n";
+	ret += "\r\n";
 	return (ret);
 }
 
