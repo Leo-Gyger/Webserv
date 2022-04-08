@@ -50,13 +50,11 @@ void Request::fill(std::string &header, std::string &svName, int svPort)
 	{
 		this->contentLength = header.substr(i, header.find("\r\n", i) - i);
 		std::string val("\r\n\r\n");
-		std::string::iterator it = std::find_first_of(header.begin() + i, header.end(), val.begin(),  val.end()) + 4;
+		std::string::iterator it = std::find_first_of(header.begin(), header.end(), val.begin(),  val.end()) + val.length();
 		this->body.insert(this->body.begin(), it, header.end());
-//		this->body =
-//			header.substr(header.find("\r\n\r\n", i) + 4, std::string::npos);
-		this->full = true;
+		if (this->body.size() >= (unsigned int)ft_stoi(this->contentLength)) // todo fix comparison
+			this->full = true;
 	}
-	return;
 }
 
 
@@ -77,6 +75,8 @@ std::vector<unsigned char> Request::getBody() const { return this->body; }
 bool Request::appendBody(const std::string &bd)
 {
 	this->body.insert(this->body.end(), bd.begin(), bd.end());
+	if (this->body.size() >= (unsigned int)ft_stoi(this->contentLength)) // todo fix comparison
+		this->full = true;
 	return true;
 }
 
