@@ -44,6 +44,10 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		status = 404;
 		filename = "errorPages/404.html";
 	}
+	if (ft_stoi(req.getContentLength()) > this->r.getMaxBodySize())
+	{
+		status = 413;
+	}
 	is_dir = *(this->filename.end() - 1) == '/';
 	if (is_dir)
 	{
@@ -55,7 +59,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		status = 404;
 		filename = "errorPages/404.html";
 	}
-	if (r.getCGI() && status != 404)
+	if (r.getCGI() && status == 200)
 	{
 		this->callCGI(req, bodySize);
 		return;
