@@ -17,20 +17,23 @@ public:
 	Route();
 	~Route();
 
-	void setMethods(int p);
+	void setMethods(int);
 	int getMethods() const;
 
-	void setDefaultFile(const std::string &s);
+	void setDefaultFile(const std::string &);
 	std::string getDefaultFile() const;
 
-	void addMethods(int p);
-	void delMethods(int p);
+	void addMethods(int);
+	void delMethods(int);
 
-	void setUrl(const std::string &u);
+	void setUrl(const std::string &);
 	std::string getUrl() const;
 
-	void setRoute(const std::string &p);
+	void setRoute(const std::string &);
 	std::string getRoute() const;
+
+	void setMaxBodySize(const int &);
+	int getMaxBodySize() const;
 
 	void setRedir(bool r);
 	bool getRedir() const;
@@ -46,6 +49,7 @@ private:
 	std::string url;
 	std::string route;
 	std::string default_file;
+	int client_max_body_size;
 	bool redir;
 	bool path;
 	bool cgi;

@@ -13,11 +13,10 @@ int parse_route_line(Route &r, t_file &f)
 	if (f.line.find('}') == 0) return (1);
 	if (f.line.find("default") == 0)
 	{
-		f.line.erase(0,7);
+		f.line.erase(0, 7);
 		f.j += trim_left(f.line) + 7;
 		r.setDefaultFile(f.line);
-	}
-	else if (f.line.find("path") == 0)
+	} else if (f.line.find("path") == 0)
 	{
 		if (r.getCGI() || r.getRedir() || r.getPath())
 			parse_error(f, "route cannot have more than one of path/redir/cgi");
@@ -68,6 +67,11 @@ int parse_route_line(Route &r, t_file &f)
 			f.j += pos + 1;
 			if (pos == std::string::npos) break;
 		}
+	} else if (f.line.find("client_max_body_size") == 0)
+	{
+		f.line.erase(0, 20);
+		f.j += trim_left(f.line) + 20;
+		r.setMaxBodySize(ft_stoi(f.line));
 	} else
 		parse_error(f, "Unrecognized token in route directive");
 	return (0);
@@ -81,8 +85,7 @@ Route parse_route(t_file &f)
 	{
 		if (f.line.find('}') == 0)
 		{
-			if (r.getCGI() || r.getRedir() || r.getPath())
-				return (r);
+			if (r.getCGI() || r.getRedir() || r.getPath()) return (r);
 			parse_error(f, "missing directive in route");
 		}
 		parse_error(f, "garbage at EOL");

@@ -4,7 +4,10 @@
 
 #include "Route.hpp"
 
-Route::Route() : default_file("index.html"), redir(false), path(false), cgi(false), methods(0) {}
+Route::Route()
+	: default_file("index.html"), client_max_body_size(1000000), redir(false),
+	  path(false), cgi(false), methods(0)
+{}
 
 Route::~Route() {}
 
@@ -31,3 +34,6 @@ bool Route::getPath() const { return this->path; }
 
 void Route::setCGI(bool c) { this->cgi = c; }
 bool Route::getCGI() const { return this->cgi; }
+
+void Route::setMaxBodySize(const int &c) { this->client_max_body_size = c; }
+int Route::getMaxBodySize() const { return this->client_max_body_size; }
