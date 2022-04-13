@@ -8,6 +8,7 @@
 #include <map>
 
 int get_gci(std::string &buffer, const std::string &filepath, int in[2],
-			const std::map<std::string, std::string> &meta_var);
+			const std::map<std::string, std::string> &meta_var,
+			const int &bodySize);
 
 #endif//WEBSERV_CGI_HPP

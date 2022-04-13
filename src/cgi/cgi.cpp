@@ -2,10 +2,10 @@
 // Created by Mano Segransan on 3/15/22.
 //
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <map>
-#include <string>
 #include <unistd.h>
 
 // const std::string &name, const std::string &value
@@ -31,7 +31,7 @@ int execute_cgi(const std::string &filepath, int in[2],
 	std::string exec;
 
 	exec = get_gci_executable(filepath);
-	if (pipe(fd) == -1) exit(EXIT_FAILURE);
+	if (pipe(fd) == -1) return (-1);
 	child = fork();
 	if (child == -1) exit(EXIT_FAILURE);
 	if (child == 0)
@@ -41,10 +41,9 @@ int execute_cgi(const std::string &filepath, int in[2],
 		close(in[1]);
 		if (dup2(fd[1], STDOUT_FILENO) == -1) exit(EXIT_FAILURE);
 		if (dup2(in[0], STDIN_FILENO) == -1) exit(EXIT_FAILURE);
-		if (execlp(exec.c_str(), exec.c_str(), filepath.c_str(),
-				   (char *) NULL) == -1)
+		if (execvp(filepath.c_str(), NULL) == -1)
 		{
-			std::cout << "err" << std::endl;
+			std::cerr << "Error launching cgi: " << filepath << std::endl;
 			exit(127);
 		}
 	}
@@ -54,14 +53,15 @@ int execute_cgi(const std::string &filepath, int in[2],
 }
 
 int get_gci(std::string &buffer, const std::string &filepath, int in[2],
-			const std::map<std::string, std::string> &meta_var)
+			const std::map<std::string, std::string> &meta_var, const int &bodySize)
 {
 	int fd;
-	const int bodySize = 3000;
-	char body[bodySize];
+	char *body = new char[bodySize]();
 
 	fd = execute_cgi(filepath, in, meta_var);
-	while (read(fd, &body, bodySize)) {}
-	std::cout << buffer.size() << std::endl;
+	if (fd == -1) return (0);
+	while (read(fd, body, bodySize) > 0) buffer += body;
+
+	delete[] body;
 	return (1);
 }

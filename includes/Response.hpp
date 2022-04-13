@@ -3,43 +3,43 @@
 
 #include "Request.hpp"
 #include "Route.hpp"
+#include <algorithm>
 #include <ctime>
 #include <iostream>
 #include <map>
 #include <vector>
-#include <algorithm>
 
 class Response
 {
 public:
-	Response(const Response &t);
-	Response(const std::vector<Route> &r, const Request &req);
+	Response(const Response &);
+	Response(const std::vector<Route> &, const Request &, const int &);
 
 	~Response();
 
-	Response &operator=(const Response &t);
+	Response &operator=(const Response &);
 
 	Request &getResponse();
 
-	void callCGI(const Request &req);
+	void callCGI(const Request &, const int &);
 
-	static std::map<std::string, std::string> buildCGIEnv(const Request &req);
+	static std::map<std::string, std::string> buildCGIEnv(const Request &);
 
 private:
 	Request response;
 	std::string filename;
 	Route r;
 
-	std::string redirection(void);
-	static std::string createStatusLine(int code);
-	void form_body(const std::string &path);
-	static std::string findType(std::string demande);
+	std::string redirection();
+	static std::string createStatusLine(int);
+	void form_body(const std::string &);
+	static std::string findType(std::string);
 	static std::string Date();
-	void redirection(const std::string &location);
-	static std::string createFname(const std::string &header, bool &is_dir);
-	bool findRoute(const std::vector<Route> &route);
-	bool is_valid(std::string &demande);
+	void redirection(const std::string &);
+	static std::string createFname(const std::string &, bool &);
+	bool findRoute(const std::vector<Route> &);
+	bool is_valid(std::string &);
 };
-std::ostream &operator<<(std::ostream &ostream, const Response &d);
+std::ostream &operator<<(std::ostream &, const Response &);
 
 #endif

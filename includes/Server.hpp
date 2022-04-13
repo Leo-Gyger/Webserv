@@ -18,10 +18,13 @@ public:
 	void accepting();
 	void createSocket(const std::string&	addr);
 
-	void setPort(int p);
+	void setPort(const int &);
 	int getPort() const;
 
-	void setBody(int b);
+	void setServerName(const std::string &);
+	const std::string &getServerName() const;
+
+	void setBody(const int &);
 	int getBody() const;
 	int	getFd() const;
 	void	listen();
@@ -31,6 +34,7 @@ private:
 	int port;
 	int fd;
 	int bodySize;
+	std::string serverName;
 	class Socket *s;
 	std::vector<Route> routesList;
 

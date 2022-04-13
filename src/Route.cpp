@@ -4,7 +4,7 @@
 
 #include "Route.hpp"
 
-Route::Route() : redir(false), path(false), cgi(false), methods(0) {}
+Route::Route() : default_file("index.html"), redir(false), path(false), cgi(false), methods(0) {}
 
 Route::~Route() {}
 

@@ -18,7 +18,8 @@ bool filterMethod(const Route &R, int method)
 	return (R.getMethods() & method);
 }
 
-Response::Response(const std::vector<Route> &route, const Request &req)
+Response::Response(const std::vector<Route> &route, const Request &req,
+				   const int &bodySize)
 	: response()
 {
 	bool is_dir;
@@ -31,6 +32,10 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 		if (!filterMethod(*it, methods)) it = tmp.erase(it);
 		else
 			++it;
+	}
+	if (req.getMethod() == "POST")
+	{
+		(void) req;
 	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
@@ -45,17 +50,17 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 		this->redirection(r.getDefaultFile());
 		return;
 	}
-	if (r.getCGI() || (req.getMethod() != "GET"))
-	{
-		std::cout << "salut" << std::endl;
-		this->callCGI(req);
-		return;
-	}
 	if (!is_valid(filename))
 	{
 		status = 404;
 		filename = "errorPages/404.html";
 	}
+	if (r.getCGI() && status != 404)
+	{
+		this->callCGI(req, bodySize);
+		return;
+	}
+
 	form_body(filename);
 
 	this->response.setProtocol("HTTP/1.1");
@@ -171,33 +176,36 @@ std::string Response::findType(std::string req)
 	return (ret);
 }
 
-void Response::callCGI(const Request &req)
+void Response::callCGI(const Request &req, const int &bodySize)
 {
 	int fd[2];
 	std::string buffer;
-	buffer.reserve(1000);
+	buffer.reserve(bodySize);
 	std::map<std::string, std::string> meta_var = Response::buildCGIEnv(req);
 
 	if (pipe(fd) == -1) exit(EXIT_FAILURE);
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
-	try
-	{
-	get_gci(
-		buffer,
-		this->r.getRoute() +
-			req.getRoute().substr(this->r.getUrl().length(), std::string::npos),
-		fd, meta_var);
-	}
-	catch (std::exception&	e)
-	{
-		std::cout << e.what() << std::endl;
-		std::cout << buffer.size() << std::endl;
-	}
-	std::string svName = "localhost";
-	this->response.fill(buffer, svName, 8080);
 
-	std::cout << "BUFFER:" << buffer << std::endl;
+	std::cout << "ROUTE NAME: "
+			  << this->r.getRoute() +
+					 req.getRoute().substr(this->r.getUrl().length(),
+										   std::string::npos)
+			  << std::endl;
+
+	std::cout << this->filename << std::endl;
+
+	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return;
+
+	int status;
+	wait(&status);
+
+	if (!status)
+	{
+		this->response.fill(buffer, req.getServerName(), 8080);
+		std::cout << "BUFFER:" << buffer << std::endl;
+	}
+
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)

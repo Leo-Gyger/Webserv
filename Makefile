@@ -44,7 +44,8 @@ INC_FLAGS += $(addprefix -I,$(INC_DIRS))
 
 CXXFLAGS += -Wall -Wextra -Werror -Wshadow
 CXXFLAGS += -std=c++98 -pedantic
-CXXFLAGS += -O3 -march=native
+#CXXFLAGS += -march=native
+#CXXFLAGS += -O2
 CXXFLAGS += -g3
 CXXFLAGS += -fdiagnostics-color
 CXXFLAGS += -fsanitize=address

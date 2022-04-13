@@ -5,15 +5,14 @@
 #include <vector>
 
 Server::Server() : port(200), fd(), bodySize(3000) {}
-void npolling(struct pollfd	*fds, int size)
+void npolling(struct pollfd *fds, int size)
 {
-	int	status;
+	int status;
 	fds->revents = 0;
-	do
-	{
+	do {
 		status = poll(fds, size, 1);
 	} while (status == 0 && fds->events != fds->revents);
-} 
+}
 std::string Server::readSocket() const
 {
 	std::string te;
@@ -45,8 +44,8 @@ void leave(int sig)
 
 void Server::accepting()
 {
-		this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
-					(socklen_t *) &s->addrlen);
+	this->fd = accept(s->getServerFd(), (struct sockaddr *) &s->address,
+					  (socklen_t *) &s->addrlen);
 }
 void Server::launch()
 {
@@ -60,14 +59,8 @@ void Server::launch()
 	}
 	std::string buff = readSocket();
 	std::cout << buff << std::endl;
-	std::string serverName = "localhost"; /* TODO: fix hardcoded serverName */
-	Request req(buff, serverName, this->port);
-//	while (!req.isFull())
-//	{
-//		buff = readSocket();
-//		if (!req.appendBody(buff)) req = Request(buff, serverName, this->port);
-//	}
-	Response r(getRoutes(), req);
+	Request req(buff, this->serverName, this->port);
+	Response r(getRoutes(), req, this->bodySize);
 	ans = r.getResponse().toString();
 	send(this->fd, ans.c_str(), ans.size(), 0);
 	body = r.getResponse().getBody();
@@ -90,11 +83,14 @@ void Server::createSocket(const std::string &addr)
 }
 void Server::listen() { this->s->listening(10); }
 
-void Server::setPort(int p) { this->port = p; }
+void Server::setPort(const int &p) { this->port = p; }
 int Server::getPort() const { return (this->port); }
 
-void Server::setBody(int b) { this->bodySize = b; }
+void Server::setBody(const int &b) { this->bodySize = b; }
 int Server::getBody() const { return this->bodySize; }
 
 void Server::addRoute(const Route &r) { routesList.push_back(r); }
 std::vector<Route> Server::getRoutes() const { return this->routesList; }
+
+void Server::setServerName(const std::string &str) { this->serverName = str; }
+const std::string &Server::getServerName() const { return this->serverName; }

@@ -14,10 +14,10 @@ class Request
 public:
 	Request();
 
-	Request(std::string &header, std::string &svName, int svPort);
+	Request(const std::string &, const std::string &, const int &);
 	~Request();
 
-	void fill(std::string &header, std::string &svName, int svPort);
+	void fill(const std::string &, const std::string &, const int &);
 	std::string getMethod() const;
 	int getIntMethod() const;
 	std::string getRoute() const;
@@ -34,7 +34,7 @@ public:
 	bool isFull() const;
 	std::string toString() const;
 
-	bool appendBody(const std::string &bd);
+	void appendBody(const std::string &bd);
 
 	void setMethod(const std::string &);
 	void setRoute(const std::string &);
@@ -68,7 +68,7 @@ private:
 	std::string location;
 	std::string connection;
 
-	bool full;
+	std::string content;
 };
 
 

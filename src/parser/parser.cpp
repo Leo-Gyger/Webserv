@@ -128,6 +128,13 @@ int parse_line(Server &sv, t_file &f)
 		sv.setBody(ft_stoi(f.line));
 		f.j += trim_left_number(f.line);
 		if (!f.line.empty()) parse_error(f, "garbage at EOL");
+	} else if (f.line.find("server_name") == 0)
+	{
+		f.line.erase(0, 11);
+		f.j += trim_left(f.line) + 11;
+		sv.setServerName(f.line);
+		f.j += trim_left_number(f.line);
+		if (!f.line.empty()) parse_error(f, "garbage at EOL");
 	} else
 		parse_error(f, "Unrecognized token in server directive");
 	return (0);
