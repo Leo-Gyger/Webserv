@@ -129,6 +129,8 @@ std::string Response::createStatusLine(int code)
 	SLmap[404] = "404 Not Found";
 	SLmap[201] = "201 Created";
 	SLmap[301] = "301 Moved Permanently";
+	SLmap[502] = "502 Bad Gateway";
+	SLmap[413] = "413 Request Entity Too Large";
 	it = SLmap.find(code);
 	if (it == SLmap.end()) return (SLmap[404]);
 	return (it->second);

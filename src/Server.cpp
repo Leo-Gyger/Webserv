@@ -4,7 +4,7 @@
 #include <poll.h>
 #include <vector>
 
-Server::Server() : port(200), fd(), bodySize(3000) {}
+Server::Server() : port(200), fd(), bodySize(30000) {}
 void npolling(struct pollfd *fds, int size)
 {
 	int status;
