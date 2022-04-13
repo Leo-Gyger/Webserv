@@ -8,6 +8,7 @@ Server::Server() : port(200), fd(), bodySize(3000) {}
 void npolling(struct pollfd	*fds, int size)
 {
 	int	status;
+	fds->revents = 0;
 	do
 	{
 		status = poll(fds, size, 1);
@@ -58,13 +59,14 @@ void Server::launch()
 		return;
 	}
 	std::string buff = readSocket();
+	std::cout << buff << std::endl;
 	std::string serverName = "localhost"; /* TODO: fix hardcoded serverName */
 	Request req(buff, serverName, this->port);
-	while (!req.isFull())
-	{
-		buff = readSocket();
-		if (!req.appendBody(buff)) req = Request(buff, serverName, this->port);
-	}
+//	while (!req.isFull())
+//	{
+//		buff = readSocket();
+//		if (!req.appendBody(buff)) req = Request(buff, serverName, this->port);
+//	}
 	Response r(getRoutes(), req);
 	ans = r.getResponse().toString();
 	send(this->fd, ans.c_str(), ans.size(), 0);

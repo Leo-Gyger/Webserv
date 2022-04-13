@@ -61,6 +61,7 @@ int get_gci(std::string &buffer, const std::string &filepath, int in[2],
 	char body[bodySize];
 
 	fd = execute_cgi(filepath, in, meta_var);
-	while (read(fd, &body, bodySize)) buffer += body;
+	while (read(fd, &body, bodySize)) {}
+	std::cout << buffer.size() << std::endl;
 	return (1);
 }

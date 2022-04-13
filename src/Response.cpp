@@ -45,8 +45,9 @@ Response::Response(const std::vector<Route> &route, const Request &req)
 		this->redirection(r.getDefaultFile());
 		return;
 	}
-	if (r.getCGI())
+	if (r.getCGI() || (req.getMethod() != "GET"))
 	{
+		std::cout << "salut" << std::endl;
 		this->callCGI(req);
 		return;
 	}
@@ -174,17 +175,25 @@ void Response::callCGI(const Request &req)
 {
 	int fd[2];
 	std::string buffer;
-
+	buffer.reserve(1000);
 	std::map<std::string, std::string> meta_var = Response::buildCGIEnv(req);
 
 	if (pipe(fd) == -1) exit(EXIT_FAILURE);
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
+	try
+	{
 	get_gci(
 		buffer,
 		this->r.getRoute() +
 			req.getRoute().substr(this->r.getUrl().length(), std::string::npos),
 		fd, meta_var);
+	}
+	catch (std::exception&	e)
+	{
+		std::cout << e.what() << std::endl;
+		std::cout << buffer.size() << std::endl;
+	}
 	std::string svName = "localhost";
 	this->response.fill(buffer, svName, 8080);
 

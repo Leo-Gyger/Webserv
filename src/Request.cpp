@@ -32,7 +32,7 @@ void Request::fill(std::string &header, std::string &svName, int svPort)
 		this->queryString = this->route.substr(i, std::string::npos);
 		this->route = this->route.substr(0, i);
 	}
-
+	std::cout << stream << std::endl;
 	std::getline(stream, this->protocol, '\r');
 	i = header.find("Authorization: ") +
 		std::string("Authorization: ").length();
