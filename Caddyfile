@@ -1,0 +1,4 @@
+localhost:80
+
+file_server
+reverse_proxy /api/* 127.0.0.1:9005

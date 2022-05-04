@@ -10,12 +10,14 @@
 
 Request::Request() {}
 
-Request::Request(const std::string &header, const std::string &svName, const int &svPort)
+Request::Request(const std::string &header, const std::string &svName,
+				 const int &svPort)
 {
 	this->fill(header, svName, svPort);
 }
 
-void Request::fill(const std::string &header, const std::string &svName, const int &svPort)
+void Request::fill(const std::string &header, const std::string &svName,
+				   const int &svPort)
 {
 	this->content = header;
 	std::istringstream stream(header);
@@ -60,12 +62,11 @@ void Request::fill(const std::string &header, const std::string &svName, const i
 	{
 		i += std::string("Content-Length: ").length();
 		this->contentLength = header.substr(i, header.find("\r\n", i) - i);
-		if (ft_stoi(this->contentLength) == -1)
-			throw std::exception();
+		if (ft_stoi(this->contentLength) == -1) throw std::exception();
 		std::string val("\r\n\r\n");
 		std::string::iterator it =
-			std::find_first_of(this->content.begin(), this->content.end(), val.begin(),
-							   val.end()) +
+			std::find_first_of(this->content.begin(), this->content.end(),
+							   val.begin(), val.end()) +
 			(long) val.length();
 		this->body.insert(this->body.begin(), it, this->content.end());
 		if (this->body.size() < (unsigned int) ft_stoi(this->contentLength))
@@ -92,18 +93,19 @@ int Request::getIntMethod() const
 	if (this->method == "GET") return (GET);
 	if (this->method == "POST") return (POST);
 	if (this->method == "DELETE") return (DELETE);
+	if (this->method == "PUT") return (PUT);
+	if (this->method == "HEAD") return (HEAD);
 	return (-1);
 }
 
 std::string Request::toString() const
 {
-	if (!this->content.empty())
-		return (this->content);
 	std::string ret = this->protocol + " " + this->method +
 					  "\r\n"
 					  "Date: " +
 					  this->date + "\r\n";
 
+	if (this->method.find("405") == 0) ret += "Allow: " + this->allow + "\r\n";
 	if (!this->location.empty()) ret += "Location: " + this->location + "\r\n";
 	if (!this->contentType.empty())
 		ret += "Content-Type: " + this->contentType + "\r\n";
@@ -138,3 +140,4 @@ void Request::setBody(const std::vector<unsigned char> &b)
 void Request::setDate(const std::string &d) { this->date = d; }
 void Request::setLocation(const std::string &l) { this->location = l; }
 void Request::setConnection(const std::string &c) { this->connection = c; }
+void Request::setAllow(const std::string &a) { this->allow = a; }

@@ -38,6 +38,7 @@ public:
 
 	void setMethod(const std::string &);
 	void setRoute(const std::string &);
+	void setAllow(const std::string &);
 	void setProtocol(const std::string &);
 	void setUserAgent(const std::string &);
 	void setAuthorization(const std::string &);
@@ -53,6 +54,7 @@ public:
 	void setConnection(const std::string &);
 private:
 	std::string method;
+	std::string allow;
 	std::string route;
 	std::string protocol;
 	std::string userAgent;

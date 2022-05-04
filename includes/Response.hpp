@@ -37,7 +37,7 @@ private:
 	static std::string Date();
 	void redirection(const std::string &);
 	static std::string createFname(const std::string &, bool &);
-	bool findRoute(const std::vector<Route> &);
+	int findRoute(std::vector<Route> &route, int method);
 	bool is_valid(std::string &);
 };
 std::ostream &operator<<(std::ostream &, const Response &);

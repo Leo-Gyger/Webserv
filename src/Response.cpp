@@ -13,43 +13,37 @@ bool mySort(const Route &A, const Route &B)
 	return (A.getRoute().size() > B.getRoute().size());
 }
 
-bool filterMethod(const Route &R, int method)
-{
-	return (R.getMethods() & method);
-}
-
 Response::Response(const std::vector<Route> &route, const Request &req,
 				   const int &bodySize)
 	: response()
 {
 	bool is_dir;
-	int status = 200;
+	int status;
 	int methods = req.getIntMethod();
 	std::vector<Route> tmp = route;
 
-	for (std::vector<Route>::iterator it = tmp.begin(); it != tmp.end();)
-	{
-		if (!filterMethod(*it, methods)) it = tmp.erase(it);
-		else
-			++it;
-	}
-	if (req.getMethod() == "POST")
-	{
-		(void) req;
-	}
+	//	if (req.getMethod() == "POST")
+	//	{
+	//		(void) req;
+	//	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
-	if (!findRoute(tmp))
-	{
-		status = 404;
-		filename = "errorPages/404.html";
-	}
+	status = findRoute(tmp, methods);
+	if (status == 404) filename = "errorPages/404.html";
+	if (status == 405) filename = "errorPages/405.html";
+	if (status != 200) goto build_response;
+
 	if (ft_stoi(req.getContentLength()) > this->r.getMaxBodySize())
 	{
 		status = 413;
 	}
+	if (r.getCGI())
+	{
+		this->callCGI(req, bodySize);
+		return;
+	}
 	is_dir = *(this->filename.end() - 1) == '/';
-	if (is_dir)
+	if (is_dir && status == 200)
 	{
 		this->redirection(r.getDefaultFile());
 		return;
@@ -59,12 +53,8 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		status = 404;
 		filename = "errorPages/404.html";
 	}
-	if (r.getCGI() && status == 200)
-	{
-		this->callCGI(req, bodySize);
-		return;
-	}
 
+build_response:
 	form_body(filename);
 
 	this->response.setProtocol("HTTP/1.1");
@@ -97,20 +87,59 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 	return (name);
 }
 
-bool Response::findRoute(const std::vector<Route> &route)
+int Response::findRoute(std::vector<Route> &route, int method)
 {
-	for (std::vector<Route>::size_type i = 0; i != route.size(); i++)
+	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
 	{
-		std::string::size_type pos;
-		pos = this->filename.find(route[i].getUrl());
-		if (pos != std::string::npos)
-		{
-			std::cout << route[i].getUrl() << std::endl;
-			this->r = route[i];
-			return true;
-		}
+		// todo: we need to match if filename is missing trailing /
+		if (this->filename.find(it->getUrl()) == 0 &&
+			this->filename.length() >= it->getUrl().length())
+			it++;
+		else
+			it = route.erase(it);
 	}
-	return false;
+
+	if (route.empty()) return (404);
+
+	int allowedMethods = 0;
+	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
+	{
+		allowedMethods |= it->getMethods();
+		if (it->getMethods() & method)
+		{
+			this->r = Route(*it);
+			std::cout << it->getUrl() << std::endl;
+			return (200);
+		}
+		it++;
+	}
+
+	// todo: we probably need to move this to its own function
+	std::string allowed;
+	if (allowedMethods & GET) allowed += "GET";
+	if (allowedMethods & POST)
+	{
+		if (!allowed.empty()) allowed += " ,";
+		allowed += "POST";
+	}
+	if (allowedMethods & PUT)
+	{
+		if (!allowed.empty()) allowed += " ,";
+		allowed += "PUT";
+	}
+	if (allowedMethods & DELETE)
+	{
+		if (!allowed.empty()) allowed += " ,";
+		allowed += "DELETE";
+	}
+	if (allowedMethods & HEAD)
+	{
+		if (!allowed.empty()) allowed += " ,";
+		allowed += "HEAD";
+	}
+
+	this->response.setAllow(allowed);
+	return (405);
 }
 
 bool Response::is_valid(std::string &demande)
@@ -131,6 +160,7 @@ std::string Response::createStatusLine(int code)
 
 	SLmap[200] = "200 OK";
 	SLmap[404] = "404 Not Found";
+	SLmap[405] = "405 Method Not Allowed";
 	SLmap[201] = "201 Created";
 	SLmap[301] = "301 Moved Permanently";
 	SLmap[502] = "502 Bad Gateway";
@@ -142,6 +172,8 @@ std::string Response::createStatusLine(int code)
 
 void Response::form_body(const std::string &path)
 {
+	// todo: segfault if path is empty
+	if (path.empty()) return;
 	std::ifstream file(path.c_str());
 	std::streampos size;
 
@@ -161,6 +193,9 @@ std::string Response::findType(std::string req)
 	std::map<std::string, std::string>::iterator it;
 	std::string ret;
 
+	// todo: segfault if path is empty
+	if (req.empty()) return ("");
+
 	extension[".jpg"] = "image/jpeg";
 	extension[".ico"] = "image/x-icon";
 	extension[".html"] = "text/html";
@@ -168,12 +203,12 @@ std::string Response::findType(std::string req)
 	extension[".avi"] = "video/x-msvideo";
 	extension[".gif"] = "image/gif";
 	extension[".ts"] = "application/typescript";
-	std::string::size_type i, n;
+	std::string::size_type i;
 	i = req.find('.');
-	n = req.find(' ', i);
-	std::istringstream ss(req.substr(i, n));
-	std::getline(ss, req, ' ');
-	it = extension.find(req);
+	if (i != std::string::npos)
+		it = extension.find(req.substr(i));
+	else
+		it = extension.end();
 	if (it == extension.end()) ret = "application/octet-stream";
 	else
 		ret = it->second;
@@ -211,7 +246,6 @@ void Response::callCGI(const Request &req, const int &bodySize)
 		this->response.fill(buffer, req.getServerName(), 8080);
 		std::cout << "BUFFER:" << buffer << std::endl;
 	}
-
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)

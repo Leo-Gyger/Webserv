@@ -14,7 +14,7 @@ SHELL = /bin/sh
 
 CXXFLAGS := ${CFLAGS}
 
-CXX ?= c++
+CXX ?= g++-11
 
 INC_FLAGS :=
 LDFLAGS :=

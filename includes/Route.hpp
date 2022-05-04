@@ -7,14 +7,17 @@
 
 #include <iostream>
 #include <vector>
-#define GET 1   // 0b1
-#define POST 2  // 0b10
-#define DELETE 4// 0b100
+#define GET 1    // 0b1
+#define POST 2   // 0b10
+#define DELETE 4 // 0b100
+#define PUT 8    // 0b1000
+#define HEAD 16  // 0b10000
 
 class Route
 {
 public:
 	Route();
+	Route(const Route &);
 	~Route();
 
 	void setMethods(int);

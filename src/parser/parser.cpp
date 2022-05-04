@@ -61,6 +61,10 @@ int parse_route_line(Route &r, t_file &f)
 				r.addMethods(POST);
 			else if (token == "DELETE")
 				r.addMethods(DELETE);
+			else if (token == "PUT")
+				r.addMethods(PUT);
+			else if (token == "HEAD")
+				r.addMethods(HEAD);
 			else
 				parse_error(f, "unrecognized token: " + token);
 			f.line.erase(0, pos + 1);

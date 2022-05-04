@@ -62,9 +62,13 @@ void Server::launch()
 	Request req(buff, this->serverName, this->port);
 	Response r(getRoutes(), req, this->bodySize);
 	ans = r.getResponse().toString();
+	std::cout << ans << std::endl;
 	send(this->fd, ans.c_str(), ans.size(), 0);
-	body = r.getResponse().getBody();
-	send(this->fd, &body[0], body.size(), 0);
+	if (req.getMethod() != "HEAD")
+	{
+		body = r.getResponse().getBody();
+		send(this->fd, &body[0], body.size(), 0);
+	}
 	close(this->fd);
 }
 
