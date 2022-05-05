@@ -47,6 +47,14 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	{
 		status = 413;
 	}
+	if (methods == PUT)
+	{
+		Put_meth(req, status);
+		this->response.setProtocol("HTTP/1.1");
+		this->response.setMethod(createStatusLine(status));
+		this->response.setDate(Response::Date());
+		return;
+	}
 	if (r.getCGI())
 	{
 		this->callCGI(req, bodySize);
@@ -91,6 +99,26 @@ void Response::redirection(const std::string &location, const std::string &route
 	this->response.setLocation(req);
 	this->response.setConnection("close");
 }
+void Response::Put_meth(const Request& req, int& status)
+{
+	std::ofstream file;
+
+	file.open(req.getRoute().c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
+	if (!file)
+	{
+		status = 201;
+		file.open(req.getRoute().c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
+		file << req.getBody().data();
+	}
+	else {
+		status = 200;
+		file.close();
+		remove(req.getRoute().c_str());
+		file.open(req.getRoute().c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
+		file << req.getBody().data();
+	}
+	file.close();
+}
 
 std::string Response::createFname(const std::string &header, bool &is_dir)
 {
@@ -108,8 +136,8 @@ int Response::findRoute(std::vector<Route> &route, int method)
 {
 	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
 	{
-		if (this->filename.find(it->getUrl()) == 0 &&
-			this->filename.length() >= it->getUrl().length())
+
+			if (this->filename.length() >= it->getUrl().length())
 			it++;
 		else
 			it = route.erase(it);

@@ -35,6 +35,7 @@ private:
 	void form_body(const std::string &);
 	static std::string findType(std::string);
 	static std::string Date();
+	void	Put_meth(const Request&, int&);
 	void redirection(const std::string &, const std::string &);
 	static std::string createFname(const std::string &, bool &);
 	int findRoute(std::vector<Route> &route, int method);
