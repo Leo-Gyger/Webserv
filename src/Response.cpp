@@ -28,7 +28,10 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	//	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
-	status = findRoute(tmp, methods);
+	if (filename.empty())
+		status = 404;
+	else
+		status = findRoute(tmp, methods);
 	if (status == 404) filename = "errorPages/404.html";
 	if (status == 405) filename = "errorPages/405.html";
 	if (status != 200) goto build_response;
@@ -82,8 +85,8 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 
 	std::getline(stream, name, ' ');
 	std::getline(stream, name, ' ');
-	it = name.end() - 1;
-	if (*it == '/') is_dir = true;
+	if (name.find('.') == std::string::npos)
+		is_dir = true;
 	return (name);
 }
 
@@ -148,6 +151,7 @@ bool Response::is_valid(std::string &demande)
 
 	demande = this->r.getRoute() + demande.substr(this->r.getUrl().size());
 	std::ifstream file(demande.c_str());
+	std::cout << demande << std::endl;
 	if (!file) ret_val = false;
 	file.close();
 	return ret_val;
@@ -194,7 +198,7 @@ std::string Response::findType(std::string req)
 	std::string ret;
 
 	// todo: segfault if path is empty
-	if (req.empty()) return ("");
+	if (req.empty()) return (std::string());
 
 	extension[".jpg"] = "image/jpeg";
 	extension[".ico"] = "image/x-icon";
@@ -234,7 +238,6 @@ void Response::callCGI(const Request &req, const int &bodySize)
 										   std::string::npos)
 			  << std::endl;
 
-	std::cout << this->filename << std::endl;
 
 	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return;
 
