@@ -30,10 +30,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	int methods = req.getIntMethod();
 	std::vector<Route> tmp = route;
 	std::string temp;
-	//	if (req.getMethod() == "POST")
-	//	{
-	//		(void) req;
-	//	}
+
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
 	if (filename.empty()) status = 404;
@@ -47,19 +44,6 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	{
 		status = 413;
 	}
-	if (methods == PUT)
-	{
-		Put_meth(req, status);
-		this->response.setProtocol("HTTP/1.1");
-		this->response.setMethod(createStatusLine(status));
-		this->response.setDate(Response::Date());
-		return;
-	}
-	if (r.getCGI())
-	{
-		this->callCGI(req, bodySize);
-		return;
-	}
 	temp = this->r.getRoute();
 	if (this->r.getUrl().size() == 1) temp += '/';
 	temp += this->filename.substr(this->r.getUrl().size());
@@ -68,6 +52,19 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	if (isDirectory(this->filename.c_str()))
 	{
 		this->redirection(r.getDefaultFile(), req.getRoute());
+		return;
+	}
+	if (methods == PUT)
+	{
+		put_method(req, status);
+		this->response.setProtocol("HTTP/1.1");
+		this->response.setMethod(createStatusLine(status));
+		this->response.setDate(Response::Date());
+		return;
+	}
+	if (r.getCGI())
+	{
+		this->callCGI(req, bodySize);
 		return;
 	}
 	if (!is_valid(filename))
@@ -85,7 +82,8 @@ build_response:
 	this->response.setContentType(findType(filename));
 }
 
-void Response::redirection(const std::string &location, const std::string &route)
+void Response::redirection(const std::string &location,
+						   const std::string &route)
 {
 	std::string ret;
 	std::string req;
@@ -99,22 +97,26 @@ void Response::redirection(const std::string &location, const std::string &route
 	this->response.setLocation(req);
 	this->response.setConnection("close");
 }
-void Response::Put_meth(const Request& req, int& status)
+void Response::put_method(const Request &req, int &status)
 {
 	std::ofstream file;
 
-	file.open(req.getRoute().c_str(), std::fstream::in | std::fstream::out | std::fstream::app);
+	std::cout << "PUT BODY: " << this->filename << std::endl;
+	file.open(this->filename.c_str(),
+			  std::fstream::in | std::fstream::out | std::fstream::app);
 	if (!file)
 	{
 		status = 201;
-		file.open(req.getRoute().c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
+		file.open(this->filename.c_str(),
+				  std::fstream::in | std::fstream::out | std::fstream::trunc);
 		file << req.getBody().data();
-	}
-	else {
+	} else
+	{
 		status = 200;
 		file.close();
-		remove(req.getRoute().c_str());
-		file.open(req.getRoute().c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
+		remove(this->filename.c_str());
+		file.open(this->filename.c_str(),
+				  std::fstream::in | std::fstream::out | std::fstream::trunc);
 		file << req.getBody().data();
 	}
 	file.close();
@@ -137,7 +139,8 @@ int Response::findRoute(std::vector<Route> &route, int method)
 	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
 	{
 
-			if (this->filename.length() >= it->getUrl().length())
+		if (this->filename.find(it->getUrl()) == 0 &&
+			this->filename.length() >= it->getUrl().length())
 			it++;
 		else
 			it = route.erase(it);
@@ -152,7 +155,7 @@ int Response::findRoute(std::vector<Route> &route, int method)
 		if (it->getMethods() & method)
 		{
 			this->r = Route(*it);
-			std::cout << "GETURL, findRoute" << it->getUrl() << std::endl;
+			std::cout << "GETURL, findRoute: " << it->getUrl() << std::endl;
 			return (200);
 		}
 		it++;
