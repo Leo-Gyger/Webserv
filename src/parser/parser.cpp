@@ -15,6 +15,8 @@ int parse_route_line(Route &r, t_file &f)
 	{
 		f.line.erase(0, 7);
 		f.j += trim_left(f.line) + 7;
+		if (f.line[0] != '/')
+			f.line = '/' + f.line;
 		r.setDefaultFile(f.line);
 	} else if (f.line.find("path") == 0)
 	{
@@ -22,6 +24,8 @@ int parse_route_line(Route &r, t_file &f)
 			parse_error(f, "route cannot have more than one of path/redir/cgi");
 		f.line.erase(0, 4);
 		f.j += trim_left(f.line) + 4;
+		if (*(f.line.end() - 1) == '/' && f.line.size() != 1)
+			f.line = f.line.substr(0, f.line.size() - 1);
 		r.setRoute(f.line);
 		r.setPath(true);
 	} else if (f.line.find("redir") == 0)
@@ -44,6 +48,8 @@ int parse_route_line(Route &r, t_file &f)
 	{
 		f.line.erase(0, 3);
 		f.j += trim_left(f.line) + 3;
+		if (*(f.line.end() - 1) == '/' && f.line.size() != 1)
+			f.line = f.line.substr(0, f.line.size() - 1);
 		r.setUrl(f.line);
 	} else if (f.line.find("methods") == 0)
 	{

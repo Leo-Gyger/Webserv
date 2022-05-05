@@ -46,7 +46,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		return;
 	}
 	is_dir = *(this->filename.end() - 1) == '/';
-	if (is_dir && status == 200)
+	if (is_dir)
 	{
 		this->redirection(r.getDefaultFile());
 		return;
@@ -94,7 +94,6 @@ int Response::findRoute(std::vector<Route> &route, int method)
 {
 	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
 	{
-		// todo: we need to match if filename is missing trailing /
 		if (this->filename.find(it->getUrl()) == 0 &&
 			this->filename.length() >= it->getUrl().length())
 			it++;
@@ -111,7 +110,7 @@ int Response::findRoute(std::vector<Route> &route, int method)
 		if (it->getMethods() & method)
 		{
 			this->r = Route(*it);
-			std::cout << it->getUrl() << std::endl;
+			std::cout << "GETURL, findRoute" <<it->getUrl() << std::endl;
 			return (200);
 		}
 		it++;
@@ -145,15 +144,20 @@ int Response::findRoute(std::vector<Route> &route, int method)
 	return (405);
 }
 
-bool Response::is_valid(std::string &demande)
+bool Response::is_valid(std::string &request)
 {
 	bool ret_val = true;
+	std::string req;
 
-	demande = this->r.getRoute() + demande.substr(this->r.getUrl().size());
-	std::ifstream file(demande.c_str());
-	std::cout << demande << std::endl;
+	req = this->r.getRoute() + '/';
+	if (this->r.getUrl().size() != 1)
+		req += '/';
+	req += request.substr(this->r.getUrl().size());
+	std::ifstream file(req.c_str());
+	std::cout << "is_valid, request" << req << std::endl;
 	if (!file) ret_val = false;
 	file.close();
+	request = req;
 	return ret_val;
 }
 

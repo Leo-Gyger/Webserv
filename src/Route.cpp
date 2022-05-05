@@ -5,7 +5,7 @@
 #include "Route.hpp"
 
 Route::Route()
-	: default_file("index"), client_max_body_size(1000000), redir(false),
+	: default_file("/index.html"), client_max_body_size(1000000), redir(false),
 	  path(false), cgi(false), methods(0)
 {}
 

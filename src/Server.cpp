@@ -67,7 +67,7 @@ void Server::launch()
 	if (req.getMethod() != "HEAD")
 	{
 		body = r.getResponse().getBody();
-		send(this->fd, &body[0], body.size(), 0);
+		std::cout << "Send value: " << send(this->fd, &body[0], body.size(), 0) << '\n';
 	}
 	close(this->fd);
 }
