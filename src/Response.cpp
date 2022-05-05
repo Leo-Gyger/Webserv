@@ -101,10 +101,9 @@ void Response::put_method(const Request &req, int &status)
 {
 	std::ofstream file;
 
+	std::ifstream tfile(filename.c_str());
 	std::cout << "PUT BODY: " << this->filename << std::endl;
-	file.open(this->filename.c_str(),
-			  std::fstream::in | std::fstream::out | std::fstream::app);
-	if (!file)
+	if (!tfile)
 	{
 		status = 201;
 		file.open(this->filename.c_str(),
@@ -112,6 +111,7 @@ void Response::put_method(const Request &req, int &status)
 		file << req.getBody().data();
 	} else
 	{
+		tfile.close();
 		status = 200;
 		file.close();
 		remove(this->filename.c_str());
