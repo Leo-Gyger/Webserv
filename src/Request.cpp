@@ -34,6 +34,8 @@ void Request::fill(const std::string &header, const std::string &svName,
 		this->queryString = this->route.substr(i, std::string::npos);
 		this->route = this->route.substr(0, i);
 	}
+	if (*(this->route.end() - 1) == '/' && this->route.size() != 1)
+		this->route = this->route.substr(0, this->route.size() - 1);
 
 	std::getline(stream, this->protocol, '\r');
 	i = header.find("Authorization: ");

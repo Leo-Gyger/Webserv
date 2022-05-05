@@ -35,10 +35,10 @@ private:
 	void form_body(const std::string &);
 	static std::string findType(std::string);
 	static std::string Date();
-	void redirection(const std::string &);
+	void redirection(const std::string &, const std::string &);
 	static std::string createFname(const std::string &, bool &);
 	int findRoute(std::vector<Route> &route, int method);
-	bool is_valid(std::string &);
+	bool is_valid(const std::string &);
 };
 std::ostream &operator<<(std::ostream &, const Response &);
 

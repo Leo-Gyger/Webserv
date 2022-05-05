@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <sys/stat.h>
 #include <unistd.h>
 
 bool mySort(const Route &A, const Route &B)
@@ -13,23 +14,29 @@ bool mySort(const Route &A, const Route &B)
 	return (A.getRoute().size() > B.getRoute().size());
 }
 
+int isDirectory(const char *path)
+{
+	struct stat statbuf = {};
+	if (stat(path, &statbuf) != 0) return 0;
+	return S_ISDIR(statbuf.st_mode);
+}
+
+
 Response::Response(const std::vector<Route> &route, const Request &req,
 				   const int &bodySize)
 	: response()
 {
-	bool is_dir;
 	int status;
 	int methods = req.getIntMethod();
 	std::vector<Route> tmp = route;
-
+	std::string temp;
 	//	if (req.getMethod() == "POST")
 	//	{
 	//		(void) req;
 	//	}
 	std::sort(tmp.begin(), tmp.end(), mySort);
 	this->filename = req.getRoute();
-	if (filename.empty())
-		status = 404;
+	if (filename.empty()) status = 404;
 	else
 		status = findRoute(tmp, methods);
 	if (status == 404) filename = "errorPages/404.html";
@@ -45,10 +52,14 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		this->callCGI(req, bodySize);
 		return;
 	}
-	is_dir = *(this->filename.end() - 1) == '/';
-	if (is_dir)
+	temp = this->r.getRoute();
+	if (this->r.getUrl().size() == 1) temp += '/';
+	temp += this->filename.substr(this->r.getUrl().size());
+	this->filename = temp;
+	std::cout << "FILENAME: " << this->filename << std::endl;
+	if (isDirectory(this->filename.c_str()))
 	{
-		this->redirection(r.getDefaultFile());
+		this->redirection(r.getDefaultFile(), req.getRoute());
 		return;
 	}
 	if (!is_valid(filename))
@@ -66,14 +77,18 @@ build_response:
 	this->response.setContentType(findType(filename));
 }
 
-void Response::redirection(const std::string &location)
+void Response::redirection(const std::string &location, const std::string &route)
 {
 	std::string ret;
+	std::string req;
 
 	this->response.setProtocol("HTTP/1.1");
 	this->response.setMethod(createStatusLine(301));
 	this->response.setDate(Response::Date());
-	this->response.setLocation(location);
+	std::cout << "GETURL, redirection: " << this->r.getUrl() << std::endl;
+	req = route + location;
+	if (route.size() == 1) req = location;
+	this->response.setLocation(req);
 	this->response.setConnection("close");
 }
 
@@ -85,8 +100,7 @@ std::string Response::createFname(const std::string &header, bool &is_dir)
 
 	std::getline(stream, name, ' ');
 	std::getline(stream, name, ' ');
-	if (name.find('.') == std::string::npos)
-		is_dir = true;
+	if (name.find('.') == std::string::npos) is_dir = true;
 	return (name);
 }
 
@@ -110,7 +124,7 @@ int Response::findRoute(std::vector<Route> &route, int method)
 		if (it->getMethods() & method)
 		{
 			this->r = Route(*it);
-			std::cout << "GETURL, findRoute" <<it->getUrl() << std::endl;
+			std::cout << "GETURL, findRoute" << it->getUrl() << std::endl;
 			return (200);
 		}
 		it++;
@@ -144,20 +158,15 @@ int Response::findRoute(std::vector<Route> &route, int method)
 	return (405);
 }
 
-bool Response::is_valid(std::string &request)
+bool Response::is_valid(const std::string &req)
 {
 	bool ret_val = true;
-	std::string req;
 
-	req = this->r.getRoute() + '/';
-	if (this->r.getUrl().size() != 1)
-		req += '/';
-	req += request.substr(this->r.getUrl().size());
+
 	std::ifstream file(req.c_str());
 	std::cout << "is_valid, request" << req << std::endl;
 	if (!file) ret_val = false;
 	file.close();
-	request = req;
 	return ret_val;
 }
 
@@ -213,8 +222,7 @@ std::string Response::findType(std::string req)
 	extension[".ts"] = "application/typescript";
 	std::string::size_type i;
 	i = req.find('.');
-	if (i != std::string::npos)
-		it = extension.find(req.substr(i));
+	if (i != std::string::npos) it = extension.find(req.substr(i));
 	else
 		it = extension.end();
 	if (it == extension.end()) ret = "application/octet-stream";
