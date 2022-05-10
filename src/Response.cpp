@@ -58,6 +58,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	{
 		put_method(req, status);
 		this->response.setProtocol("HTTP/1.1");
+		status = 201;
 		this->response.setMethod(createStatusLine(status));
 		this->response.setDate(Response::Date());
 		return;

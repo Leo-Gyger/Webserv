@@ -21,6 +21,10 @@ std::string Server::readSocket() const
 	fds.events = POLLIN;
 	npolling(&fds, 1);
 	char *buf = new char[this->bodySize];
+	if (!buf)
+	{
+		std::exit(1);
+	}
 	for (int in = 0; in != this->bodySize; in++) buf[in] = 0;
 	int size = recv(this->fd, buf, this->bodySize, 0);
 	if (size <= 0)
