@@ -72,7 +72,10 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		status = 404;
 		filename = "errorPages/404.html";
 	}
-
+	if (status == 413)
+	{
+		filename = "errorPages/413.html";
+	}
 build_response:
 	form_body(filename);
 
@@ -289,7 +292,7 @@ void Response::callCGI(const Request &req, const int &bodySize)
 
 	if (!status)
 	{
-		this->response.fill(buffer, req.getServerName(), 8080);
+		this->response.fill(buffer, req.getServerName(), 200);
 		std::cout << "BUFFER:" << buffer << std::endl;
 	}
 }

@@ -23,7 +23,6 @@ std::string Server::readSocket() const
 	char *buf = new char[this->bodySize];
 	for (int in = 0; in != this->bodySize; in++) buf[in] = 0;
 	int size = recv(this->fd, buf, this->bodySize, 0);
-	std::cout << size << std::endl;
 	if (size <= 0)
 	{
 		delete[] buf;
@@ -68,6 +67,7 @@ void Server::launch()
 		body = r.getResponse().getBody();
 		std::cout << "Send value: " << send(this->fd, &body[0], body.size(), 0) << '\n';
 	}
+	close(this->fd);
 }
 
 Server::~Server()
