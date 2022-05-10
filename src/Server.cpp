@@ -26,7 +26,6 @@ std::string Server::readSocket() const
 	std::cout << size << std::endl;
 	if (size <= 0)
 	{
-		close(this->fd);
 		delete[] buf;
 		return (std::string());
 	}
@@ -69,12 +68,10 @@ void Server::launch()
 		body = r.getResponse().getBody();
 		std::cout << "Send value: " << send(this->fd, &body[0], body.size(), 0) << '\n';
 	}
-	close(this->fd);
 }
 
 Server::~Server()
 {
-	close(this->fd);
 	std::cout << "Server destructed" << std::endl;
 }
 
