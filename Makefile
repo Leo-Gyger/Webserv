@@ -43,7 +43,7 @@ INC_DIRS := $(shell find $(INCLUDE_DIR) -type d)
 INC_FLAGS += $(addprefix -I,$(INC_DIRS))
 
 CXXFLAGS += -Wall -Wextra -Werror -Wshadow
-CXXFLAGS += -std=c++98 -pedantic
+CXXFLAGS += -std=c++98 -pedantic -flto
 #CXXFLAGS += -march=native
 #CXXFLAGS += -O2
 CXXFLAGS += -g3

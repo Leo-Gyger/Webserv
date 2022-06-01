@@ -32,9 +32,10 @@ public:
 	std::vector<unsigned char> getBody() const;
 	std::string getDate() const;
 	bool isFull() const;
-	std::string toString() const;
+	std::string toString();
 
 	void appendBody(const std::string &bd);
+	void fillHeader(const std::string &header);
 
 	void setMethod(const std::string &);
 	void setRoute(const std::string &);
@@ -71,6 +72,7 @@ private:
 	std::string connection;
 
 	std::string content;
+	std::string hd;
 };
 
 

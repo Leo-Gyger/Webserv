@@ -275,23 +275,13 @@ void Response::callCGI(const Request &req, const int &bodySize)
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
 
-	std::cout << "ROUTE NAME: "
-			  << this->r.getRoute() +
-					 req.getRoute().substr(this->r.getUrl().length(),
-										   std::string::npos)
-			  << std::endl;
-
-
 	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return;
 
 	int status;
 	wait(&status);
 
 	if (!status)
-	{
-		this->response.fill(buffer, req.getServerName(), 8080);
-		std::cout << "BUFFER:" << buffer << std::endl;
-	}
+		this->response.fillHeader(buffer);
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)

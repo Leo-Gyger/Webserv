@@ -25,6 +25,7 @@ public:
 
 	static std::map<std::string, std::string> buildCGIEnv(const Request &);
 
+	static std::string Date();
 private:
 	Request response;
 	std::string filename;
@@ -34,7 +35,6 @@ private:
 	static std::string createStatusLine(int);
 	void form_body(const std::string &);
 	static std::string findType(std::string);
-	static std::string Date();
 	void	put_method(const Request&, int&);
 	void redirection(const std::string &, const std::string &);
 	static std::string createFname(const std::string &, bool &);
