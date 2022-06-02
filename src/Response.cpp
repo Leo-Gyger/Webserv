@@ -52,7 +52,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	std::cout << "FILENAME: " << this->filename << std::endl;
 	if (isDirectory(this->filename.c_str()))
 	{
-		if (r.getDefaultFile().empty())
+		if (!r.getDefaultFile().empty())
 			this->redirection(r.getDefaultFile(), req.getRoute());
 		else if (r.getListing())
 		{

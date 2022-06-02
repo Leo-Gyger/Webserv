@@ -2,13 +2,13 @@
 #include "parser.hpp"
 #include <poll.h>
 
-int	polling(struct pollfd	*fds, int size)
+int	polling(std::vector<struct pollfd>& fds, int size)
 {
 	int	status;
 	do
 	{
-		status = poll(fds, size, 1);
-	} while (status == 0 && fds->events != fds->revents);
+		status = poll(&fds[0], size, 1);
+	} while (status == 0 && fds[0].events != fds[0].revents);
 	std::cout << status << std::endl;
 	return (status);
 }
@@ -21,7 +21,7 @@ int	loop(std::vector<Server>&	sl)
 		sl[i].createSocket("127.0.0.1");
 		sl[i].listen();
 	}
-	struct	pollfd	*fds = new struct pollfd [sl.size()];
+	std::vector<struct pollfd> fds(sl.size());
 	for (size_t i = 0; i != sl.size(); i++)
 	{
 		fds[i].fd = sl[i].getFd();
@@ -40,7 +40,6 @@ int	loop(std::vector<Server>&	sl)
 			}
 		}
 	}
-	delete[]	fds;
 	return (0);
 }
 
