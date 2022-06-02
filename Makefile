@@ -14,7 +14,7 @@ SHELL = /bin/sh
 
 CXXFLAGS := ${CFLAGS}
 
-CXX ?= g++-11
+CXX ?= ~/sgoinfre/lgyger/.brew/Cellar/llvm/13.0.1_1/bin/clang++
 
 INC_FLAGS :=
 LDFLAGS :=
@@ -48,7 +48,7 @@ CXXFLAGS += -std=c++98 -pedantic
 #CXXFLAGS += -O2
 CXXFLAGS += -g3
 CXXFLAGS += -fdiagnostics-color
-#CXXFLAGS += -fsanitize=address
+#CXXFLAGS += -fsanitize=leak
 
 all:
 	@$(MAKE) -j$(NPROC) $(NAME)

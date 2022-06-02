@@ -29,6 +29,9 @@ std::string Route::getRoute() const { return this->route; }
 void Route::setRedir(bool r) { this->redir = r; }
 bool Route::getRedir() const { return this->redir; }
 
+void Route::setListing(const bool& r) { this->listing = r;}
+bool Route::getListing() { return this->listing;}
+
 void Route::setPath(bool p) { this->path = p; }
 bool Route::getPath() const { return this->path; }
 

@@ -56,7 +56,6 @@ void Server::launch()
 	std::string ans;
 	if (this->fd == -1)
 	{
-		close(this->fd);
 		return;
 	}
 	std::string buff = readSocket();

@@ -17,6 +17,7 @@ bool mySort(const Route &A, const Route &B)
 int isDirectory(const char *path)
 {
 	struct stat statbuf = {};
+	std::cout << path << std::endl;
 	if (stat(path, &statbuf) != 0) return 0;
 	return S_ISDIR(statbuf.st_mode);
 }
@@ -51,7 +52,22 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	std::cout << "FILENAME: " << this->filename << std::endl;
 	if (isDirectory(this->filename.c_str()))
 	{
-		this->redirection(r.getDefaultFile(), req.getRoute());
+		if (r.getDefaultFile().empty())
+			this->redirection(r.getDefaultFile(), req.getRoute());
+		else if (r.getListing())
+		{
+			std::cout << "yes" << std::endl;
+			//std::vector<char *>argv;
+			//argv[0] = (char*)"-L";
+			//argv[1] = (char*)"1";
+			//argv[2] = (char*)"-a";
+			//argv[3] = (char *)"-H";
+			//argv[4] = (char *)"..";
+			//argv[5] = (char *)"-o";
+			//argv[6] = (char *)"index.html";
+			//execv("/Users/lgyger/sgoinfre/lgyger/.brew/bin/tree", &argv[0]);
+			this->filename = r.getRoute() + "index.hpp";
+		}
 		return;
 	}
 	if (methods == PUT)
@@ -159,7 +175,6 @@ int Response::findRoute(std::vector<Route> &route, int method)
 		if (it->getMethods() & method)
 		{
 			this->r = Route(*it);
-			std::cout << "GETURL, findRoute: " << it->getUrl() << std::endl;
 			return (200);
 		}
 		it++;
@@ -199,7 +214,6 @@ bool Response::is_valid(const std::string &req)
 
 
 	std::ifstream file(req.c_str());
-	std::cout << "is_valid, request" << req << std::endl;
 	if (!file) ret_val = false;
 	file.close();
 	return ret_val;

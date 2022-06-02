@@ -44,7 +44,13 @@ int parse_route_line(Route &r, t_file &f)
 		f.j += trim_left(f.line) + 3;
 		r.setRoute(f.line);
 		r.setCGI(true);
-	} else if (f.line.find("url") == 0)
+	}
+ else if (f.line.find("listing") == 0)
+	{
+		r.setListing(true);
+	}
+
+	else if (f.line.find("url") == 0)
 	{
 		f.line.erase(0, 3);
 		f.j += trim_left(f.line) + 3;
