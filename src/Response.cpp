@@ -54,21 +54,58 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	{
 		if (r.getDefaultFile().empty())
 			this->redirection(r.getDefaultFile(), req.getRoute());
-		else if (r.getListing())
+		else if (r.getBrowse())
 		{
-			std::cout << "yes" << std::endl;
-			//std::vector<char *>argv;
-			//argv[0] = (char*)"-L";
-			//argv[1] = (char*)"1";
-			//argv[2] = (char*)"-a";
-			//argv[3] = (char *)"-H";
-			//argv[4] = (char *)"..";
-			//argv[5] = (char *)"-o";
-			//argv[6] = (char *)"index.html";
-			//execv("/Users/lgyger/sgoinfre/lgyger/.brew/bin/tree", &argv[0]);
-			this->filename = r.getRoute() + "index.hpp";
+			std::vector<char *> argv;
+			argv.push_back((char *) "tree");
+			argv.push_back((char *) "-L");
+			argv.push_back((char *) "1");
+			argv.push_back((char *) "-a");
+			argv.push_back((char *) "-C");
+			argv.push_back((char *) "-H");
+			argv.push_back((char *) ".");
+			argv.push_back((char *) this->filename.c_str());
+			argv.push_back(NULL);
+			std::cout << "URL:" << "." << '\n';
+			std::cout << "URL:" << r.getRoute() << '\n';
+
+			int fd[2];
+			pid_t child;
+
+			if (pipe(fd) == -1) return;
+			child = fork();
+			if (child == -1) exit(EXIT_FAILURE); // todo: do not exit if fork fail --> do the same in cgi
+			if (child == 0)
+			{
+				close(fd[0]);
+				if (dup2(fd[1], STDOUT_FILENO) == -1) exit(EXIT_FAILURE);
+				if (execvp("tree", &argv[0]) == -1)
+				{
+					std::cerr << "Error launching tree" << std::endl;
+					exit(127);
+				}
+			}
+			close(fd[1]);
+			if (fd[0] == -1)
+			{
+				status = 500;
+				return;
+			}
+			char *body = new char[bodySize]();
+			while (read(fd[0], body, bodySize) > 0)
+				this->response.appendBody(body);
+			status = 200;
+			this->response.setProtocol("HTTP/1.1");
+			this->response.setMethod(createStatusLine(status));
+			this->response.setDate(Response::Date());
+			this->response.setContentType(findType(".html"));
+			return ;
+		} else
+		{
+			status = 404;
+			filename = "errorPages/404.html";
 		}
-		return;
+		goto build_response;
 	}
 	if (methods == PUT)
 	{
@@ -89,10 +126,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		status = 404;
 		filename = "errorPages/404.html";
 	}
-	if (status == 413)
-	{
-		filename = "errorPages/413.html";
-	}
+	if (status == 413) { filename = "errorPages/413.html"; }
 build_response:
 	form_body(filename);
 
@@ -305,8 +339,7 @@ void Response::callCGI(const Request &req, const int &bodySize)
 	int status;
 	wait(&status);
 
-	if (!status)
-		this->response.fillHeader(buffer);
+	if (!status) this->response.fillHeader(buffer);
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)

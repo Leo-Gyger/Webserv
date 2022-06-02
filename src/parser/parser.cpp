@@ -45,11 +45,6 @@ int parse_route_line(Route &r, t_file &f)
 		r.setRoute(f.line);
 		r.setCGI(true);
 	}
- else if (f.line.find("listing") == 0)
-	{
-		r.setListing(true);
-	}
-
 	else if (f.line.find("url") == 0)
 	{
 		f.line.erase(0, 3);
@@ -88,6 +83,11 @@ int parse_route_line(Route &r, t_file &f)
 		f.line.erase(0, 20);
 		f.j += trim_left(f.line) + 20;
 		r.setMaxBodySize(ft_stoi(f.line));
+	} else if (f.line.find("browse") == 0)
+	{
+		f.line.erase(0, 6);
+		f.j += trim_left(f.line) + 6;
+		r.setBrowse(true);
 	} else
 		parse_error(f, "Unrecognized token in route directive");
 	return (0);

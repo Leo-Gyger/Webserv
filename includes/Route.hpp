@@ -44,15 +44,14 @@ public:
 	void setPath(bool p);
 	bool getPath() const;
 
-	void setListing(const bool&);
-	bool getListing();
-
 	void setCGI(bool c);
 	bool getCGI() const;
+
 	std::vector<std::string> method;
 
+	void setBrowse(bool c);
+	bool getBrowse() const;
 private:
-	bool        listing;
 	std::string url;
 	std::string route;
 	std::string default_file;
@@ -61,6 +60,7 @@ private:
 	bool path;
 	bool cgi;
 	int methods;
+	bool browse;
 };
 
 

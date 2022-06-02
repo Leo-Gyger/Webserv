@@ -195,3 +195,4 @@ _deps
 # executable
 webserv
 build
+webserv.dSYM

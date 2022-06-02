@@ -6,7 +6,7 @@
 
 Route::Route()
 	: default_file("/index.html"), client_max_body_size(1000000), redir(false),
-	  path(false), cgi(false), methods(0)
+	  path(false), cgi(false), methods(0), browse(false)
 {}
 
 Route::~Route() {}
@@ -29,9 +29,6 @@ std::string Route::getRoute() const { return this->route; }
 void Route::setRedir(bool r) { this->redir = r; }
 bool Route::getRedir() const { return this->redir; }
 
-void Route::setListing(const bool& r) { this->listing = r;}
-bool Route::getListing() { return this->listing;}
-
 void Route::setPath(bool p) { this->path = p; }
 bool Route::getPath() const { return this->path; }
 
@@ -51,4 +48,8 @@ Route::Route(const Route &r)
 	this->path = r.path;
 	this->cgi = r.cgi;
 	this->methods = r.methods;
+	this->browse = r.browse;
 }
+
+void Route::setBrowse(bool c) { this->browse = c; }
+bool Route::getBrowse() const { return this->browse; }

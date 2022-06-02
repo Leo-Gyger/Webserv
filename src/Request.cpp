@@ -82,7 +82,7 @@ void Request::fillHeader(const std::string &header)
 	size_t loc = header.find("\r\n\r\n") + 4;
 
 	hd.insert(0, header, 0, loc);
-	body.insert(body.begin(), header.begin() + (long)loc, header.end());
+	body.insert(body.begin(), header.begin() + (long) loc, header.end());
 }
 
 Request::~Request() {}
@@ -153,3 +153,7 @@ void Request::setDate(const std::string &d) { this->date = d; }
 void Request::setLocation(const std::string &l) { this->location = l; }
 void Request::setConnection(const std::string &c) { this->connection = c; }
 void Request::setAllow(const std::string &a) { this->allow = a; }
+void Request::appendBody(const std::string &bd)
+{
+	body.insert(body.end(), bd.begin(), bd.end());
+}
