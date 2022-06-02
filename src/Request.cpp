@@ -3,6 +3,7 @@
 //
 
 #include "Request.hpp"
+#include "Response.hpp"
 #include "parser_utils.hpp"
 #include <algorithm>
 #include <iostream>
@@ -76,6 +77,14 @@ void Request::fill(const std::string &header, const std::string &svName,
 	}
 }
 
+void Request::fillHeader(const std::string &header)
+{
+	size_t loc = header.find("\r\n\r\n") + 4;
+
+	hd.insert(0, header, 0, loc);
+	body.insert(body.begin(), header.begin() + (long)loc, header.end());
+}
+
 Request::~Request() {}
 
 std::string Request::getMethod() const { return this->method; }
@@ -100,8 +109,9 @@ int Request::getIntMethod() const
 	return (-1);
 }
 
-std::string Request::toString() const
+std::string Request::toString()
 {
+	if (!hd.empty()) return (hd);
 	std::string ret = this->protocol + " " + this->method +
 					  "\r\n"
 					  "Date: " +

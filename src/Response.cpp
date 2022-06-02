@@ -306,10 +306,7 @@ void Response::callCGI(const Request &req, const int &bodySize)
 	wait(&status);
 
 	if (!status)
-	{
-		this->response.fill(buffer, req.getServerName(), 200);
-		std::cout << "BUFFER:" << buffer << std::endl;
-	}
+		this->response.fillHeader(buffer);
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)
