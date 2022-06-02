@@ -4,7 +4,7 @@
 #include <poll.h>
 #include <vector>
 
-Server::Server() : port(200), fd(), bodySize(30000) {}
+Server::Server() : port(), fd(), bodySize() {}
 void npolling(struct pollfd *fds, int size)
 {
 	int status;
@@ -55,16 +55,19 @@ void Server::launch()
 	std::vector<unsigned char> body;
 	std::string ans;
 	if (this->fd == -1)
-	{
 		return;
-	}
 	std::string buff = readSocket();
 	std::cout << buff << std::endl;
 	Request req(buff, this->serverName, this->port);
 	Response r(getRoutes(), req, this->bodySize);
 	ans = r.getResponse().toString();
 	std::cout << "ans: " << ans << std::endl;
-	send(this->fd, ans.c_str(), ans.size(), 0);
+	if (send(this->fd, ans.c_str(), ans.size(), 0) <= 0)
+	{
+		std::cout << "send failed" << std::endl;
+		return;
+	}
+
 	if (req.getMethod() != "HEAD")
 	{
 		body = r.getResponse().getBody();
