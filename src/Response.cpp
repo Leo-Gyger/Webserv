@@ -8,6 +8,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 bool mySort(const Route &A, const Route &B)
 {
@@ -99,13 +100,13 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			this->response.setMethod(createStatusLine(status));
 			this->response.setDate(Response::Date());
 			this->response.setContentType(findType(".html"));
-			return ;
 		} else
 		{
 			status = 404;
 			filename = "errorPages/404.html";
+			goto build_response;
 		}
-		goto build_response;
+		return ;
 	}
 	if (methods == PUT)
 	{

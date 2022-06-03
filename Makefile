@@ -14,7 +14,7 @@ SHELL = /bin/sh
 
 CXXFLAGS := ${CFLAGS}
 
-CXX ?= ~/sgoinfre/lgyger/.brew/Cellar/llvm/13.0.1_1/bin/clang++
+CXX ?= g++
 
 INC_FLAGS :=
 LDFLAGS :=
@@ -43,12 +43,13 @@ INC_DIRS := $(shell find $(INCLUDE_DIR) -type d)
 INC_FLAGS += $(addprefix -I,$(INC_DIRS))
 
 CXXFLAGS += -Wall -Wextra -Werror -Wshadow
-CXXFLAGS += -std=c++98 -pedantic -flto
+CXXFLAGS += -std=c++98 -pedantic
+#CXXFLAGS += -flto=auto
 #CXXFLAGS += -march=native
 #CXXFLAGS += -O2
 CXXFLAGS += -g3
 CXXFLAGS += -fdiagnostics-color
-#CXXFLAGS += -fsanitize=leak
+CXXFLAGS += -fsanitize=address
 
 all:
 	@$(MAKE) -j$(NPROC) $(NAME)

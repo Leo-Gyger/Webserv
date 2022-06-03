@@ -7,6 +7,7 @@
 #include <iostream>
 #include <map>
 #include <unistd.h>
+#include <vector>
 
 // const std::string &name, const std::string &value
 void add_env(const std::pair<std::string, std::string>(&meta_var))
@@ -41,7 +42,9 @@ int execute_cgi(const std::string &filepath, int in[2],
 		close(in[1]);
 		if (dup2(fd[1], STDOUT_FILENO) == -1) exit(EXIT_FAILURE);
 		if (dup2(in[0], STDIN_FILENO) == -1) exit(EXIT_FAILURE);
-		if (execvp(filepath.c_str(), NULL) == -1)
+		std::vector<char *> argv;
+		argv.push_back(NULL);
+		if (execvp(filepath.c_str(), &argv[0]) == -1)
 		{
 			std::cerr << "Error launching cgi: " << filepath << std::endl;
 			exit(127);
