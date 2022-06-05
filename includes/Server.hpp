@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <csignal>
+#include <map>
 class Server
 {
 public:
@@ -37,7 +38,7 @@ private:
 	std::string serverName;
 	class Socket *s;
 	std::vector<Route> routesList;
-
+	static std::map<int,Socket *> smap;
 	std::string readSocket() const;
 };
 

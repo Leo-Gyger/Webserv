@@ -3,7 +3,7 @@
 #include "parser_utils.hpp"
 #include <poll.h>
 #include <vector>
-std::map<int, std::string> Server::smap;
+std::map<int, Socket *> Server::smap;
 Server::Server() : port(), fd(), bodySize() {}
 void npolling(struct pollfd *fds, int size)
 {
@@ -85,14 +85,24 @@ int Server::getFd() const { return (this->s->getServerFd()); }
 
 void Server::createSocket(const std::string &addr)
 {
+	static std::vector<std::string> sn_list;
 	if (smap.count(this->port) == 0)
-		smap.insert(std::make_pair(this->port, this->serverName));
-	else if (smap[this->port] == this->serverName)
 	{
-		std::cerr << "can't have two servers with the same server name on the same port" << std::endl;
-		exit(1);
+		smap.insert(std::make_pair(this->port, new Socket (this->port, addr)));
+		sn_list.push_back(this->serverName);
 	}
-	s = new Socket (this->port, addr);
+	else 
+	{
+		for (size_t i = 0; i != sn_list.size(); ++i)
+		{
+			if (sn_list[i] == this->serverName)
+			{
+				std::cerr << "can't have two servers with the same server name on the same port" << std::endl;
+				exit(1);
+			}
+		}
+	}
+	s = smap[this->port];
 	this->s->binding();
 }
 void Server::listen() { this->s->listening(10); }
