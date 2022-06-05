@@ -3,7 +3,7 @@
 #include "parser_utils.hpp"
 #include <poll.h>
 #include <vector>
-
+std::map<int, std::string> Server::smap;
 Server::Server() : port(), fd(), bodySize() {}
 void npolling(struct pollfd *fds, int size)
 {
@@ -61,7 +61,7 @@ void Server::launch()
 	Request req(buff, this->serverName, this->port);
 	Response r(getRoutes(), req, this->bodySize);
 	ans = r.getResponse().toString();
-	std::cout << "ans: " << ans << std::endl;
+	std::cout << "ans "	<< ans << std::endl;
 	if (send(this->fd, ans.c_str(), ans.size(), 0) <= 0)
 	{
 		std::cout << "send failed" << std::endl;
@@ -85,7 +85,14 @@ int Server::getFd() const { return (this->s->getServerFd()); }
 
 void Server::createSocket(const std::string &addr)
 {
-	this->s = new Socket(this->port, addr);
+	if (smap.count(this->port) == 0)
+		smap.insert(std::make_pair(this->port, this->serverName));
+	else if (smap[this->port] == this->serverName)
+	{
+		std::cerr << "can't have two servers with the same server name on the same port" << std::endl;
+		exit(1);
+	}
+	s = new Socket (this->port, addr);
 	this->s->binding();
 }
 void Server::listen() { this->s->listening(10); }
