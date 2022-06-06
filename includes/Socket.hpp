@@ -38,7 +38,7 @@ public:
 	void launch();
 
 	std::vector<Server> serverList;
-	Server *defaultServer;
+	Server defaultServer;
 
 	struct sockaddr_in address;
 	unsigned int addrlen;

@@ -41,9 +41,8 @@ void Socket::listening(int bl) const
 Socket::~Socket()
 {
 	if (this->server_fd != -1 && this->server_fd != 0) close(this->server_fd);
-	delete defaultServer;
 
-	std::cout << "destructed" << std::endl;
+	std::cout << "Socket destructed" << std::endl;
 }
 
 Socket &Socket::operator=(const Socket &obj)
@@ -83,7 +82,8 @@ void Socket::launch()
 			return;
 		}
 	}
-	defaultServer->launch(req, this->fd);
+	std::cout << "Called default route: " << req.getServerName() << std::endl;
+	defaultServer.launch(req, this->fd);
 }
 
 void npolling(struct pollfd *fds, int size)

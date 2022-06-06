@@ -53,7 +53,8 @@ void Request::fill(const std::string &header,
 		std::cout << "Host name = " << hostname << std::endl;
 		size_t j = hostname.find(':');
 		if (j != std::string::npos)
-			this->serverName = hostname.erase(j);
+			hostname.erase(j);
+		serverName = hostname;
 	}
 	i = header.find("User-Agent: ");
 	if (i != std::string::npos)
