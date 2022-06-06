@@ -1,25 +1,25 @@
 #include "../includes/Socket.hpp"
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 
-Socket::Socket(int p, const std::string&	addr) : address(), port(p), response_fd()
+Socket::Socket(const Server &sv)
+	: serverList(), address(), port(sv.getPort()), response_fd()
 {
 	std::cout << "Socket constructor" << std::endl;
 	int val = 1;
+	serverList.push_back(sv);
 	this->address.sin_family = AF_INET;
 	this->address.sin_addr.s_addr = htonl(INADDR_ANY);
 	this->address.sin_port = htons(port);
-	(void)addr;
 	this->addrlen = sizeof(address);
 	this->server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	setsockopt(this->server_fd, SOL_SOCKET,SO_REUSEADDR,(char *)&val,sizeof(val));
+	setsockopt(this->server_fd, SOL_SOCKET, SO_REUSEADDR, (char *) &val,
+			   sizeof(val));
 	fcntl(this->server_fd, F_SETFL, O_NONBLOCK);
 	if (this->server_fd == -1)
 	{
 		std::cerr << "Error creating the socket" << std::endl;
 		exit(1);
 	}
+	binding();
 }
 
 void Socket::binding()
@@ -38,10 +38,13 @@ void Socket::listening(int bl) const
 	std::cout << "Server is listening on port " << this->port << std::endl;
 }
 
-Socket::~Socket() {
-	if (this->server_fd != -1 && this->server_fd != 0)
-		close(this->server_fd);
-	std::cout << "destructed" << std::endl; }
+Socket::~Socket()
+{
+	if (this->server_fd != -1 && this->server_fd != 0) close(this->server_fd);
+	delete defaultServer;
+
+	std::cout << "destructed" << std::endl;
+}
 
 Socket &Socket::operator=(const Socket &obj)
 {
@@ -54,7 +57,63 @@ Socket &Socket::operator=(const Socket &obj)
 	return (*this);
 }
 
-void Socket::setPort(int p) { this->port = p; }
 int Socket::getPort() const { return (this->port); }
-void Socket::setServerFd(int s) { this->server_fd = s; }
-int Socket::getServerFd() const { return this->server_fd; }
+
+void Socket::launch()
+{
+	std::cout << "Launched socket!" << std::endl;
+	std::string te;
+
+	this->fd =
+		accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &addrlen);
+
+	if (this->fd == -1) return;
+
+	std::string buff = readSocket();
+	std::cout << buff << std::endl;
+
+	Request req(buff, this->port);
+
+	for (std::vector<Server>::iterator i = serverList.begin();
+		 i != serverList.end(); ++i)
+	{
+		if (i->getServerName() == req.getServerName())
+		{
+			i->launch(req, this->fd);
+			return;
+		}
+	}
+	defaultServer->launch(req, this->fd);
+}
+
+void npolling(struct pollfd *fds, int size)
+{
+	int status;
+	fds->revents = 0;
+	do {
+		status = poll(fds, size, 1);
+	} while (status == 0 && fds->events != fds->revents);
+}
+
+std::string Socket::readSocket() const
+{
+	std::string te;
+	struct pollfd fds;
+	fds.fd = this->fd;
+	fds.events = POLLIN;
+	npolling(&fds, 1);
+	char *buf = new char[3000];
+	if (!buf) { std::exit(1); }
+	for (int in = 0; in != 3000; in++) buf[in] = 0;
+	int size = recv(this->fd, buf, 3000, 0);
+	if (size <= 0)
+	{
+		delete[] buf;
+		return (std::string());
+	}
+	te.resize(size);
+	te = buf;
+	delete[] buf;
+	return (te);
+}
+int Socket::getServerFd() const { return server_fd; }

@@ -11,20 +11,19 @@
 
 Request::Request() {}
 
-Request::Request(const std::string &header, const std::string &svName,
+Request::Request(const std::string &header,
 				 const int &svPort)
 {
-	this->fill(header, svName, svPort);
+	this->fill(header, svPort);
 }
 
-void Request::fill(const std::string &header, const std::string &svName,
+void Request::fill(const std::string &header,
 				   const int &svPort)
 {
 	this->content = header;
 	std::istringstream stream(header);
 	size_t i;
 
-	this->serverName = svName;
 	this->serverPort = ft_itos(svPort);
 
 	std::getline(stream, this->method, ' ');
@@ -52,10 +51,9 @@ void Request::fill(const std::string &header, const std::string &svName,
 		i += std::string("Host: ").length();
 		std::string hostname = header.substr(i, header.find("\r\n", i) - i);
 		std::cout << "Host name = " << hostname << std::endl;
-		i = hostname.find(":");
-		if (i != std::string::npos)
-			std::cout << hostname.erase(i) << std::endl;
-		this->serverName = hostname;
+		size_t j = hostname.find(':');
+		if (j != std::string::npos)
+			this->serverName = hostname.erase(j);
 	}
 	i = header.find("User-Agent: ");
 	if (i != std::string::npos)

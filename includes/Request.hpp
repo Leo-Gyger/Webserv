@@ -14,10 +14,10 @@ class Request
 public:
 	Request();
 
-	Request(const std::string &, const std::string &, const int &);
+	Request(const std::string &, const int &);
 	~Request();
 
-	void fill(const std::string &, const std::string &, const int &);
+	void fill(const std::string &, const int &);
 	std::string getMethod() const;
 	int getIntMethod() const;
 	std::string getRoute() const;

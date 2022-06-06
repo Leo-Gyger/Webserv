@@ -1,64 +1,100 @@
 #include "Server.hpp"
+#include "Socket.hpp"
 #include "parser.hpp"
 #include <poll.h>
 
-int	polling(std::vector<struct pollfd>& fds, int size)
+void polling(std::vector<struct pollfd> &fds, size_t size)
 {
-	int	status;
-	do
-	{
+	int status;
+	do {
 		status = poll(&fds[0], size, 1);
 	} while (status == 0 && fds[0].events != fds[0].revents);
 	std::cout << status << std::endl;
-	return (status);
 }
 
-int	loop(std::vector<Server>&	sl)
+int loop(std::vector<Socket> &sl)
 {
-
-	for (size_t i = 0; i != sl.size(); i++)
-	{
-		sl[i].createSocket("127.0.0.1");
-		sl[i].listen();
-	}
+	int l = 0;
 	std::vector<struct pollfd> fds(sl.size());
-	for (size_t i = 0; i != sl.size(); i++)
+	for (std::vector<Socket>::iterator j = sl.begin(); j != sl.end(); ++j, ++l)
 	{
-		fds[i].fd = sl[i].getFd();
-		fds[i].events = POLLIN;
-		fds[i].revents = 0;
+		j->listening(10);
+		fds[l].fd = sl[l].getServerFd();
+		fds[l].events = POLLIN;
+		fds[l].revents = 0;
 	}
+
 	while (1)
 	{
 		polling(fds, sl.size());
 		for (size_t i = 0; i != sl.size(); ++i)
 		{
-			if (fds[i].revents == POLLIN)
-			{
-				sl[i].accepting();
-				sl[i].launch();
-			}
+			std::cout << "revents: " << (fds[i].revents) << std::endl;
+			if (fds[i].revents & POLLIN) sl[i].launch();
 		}
 	}
-	return (0);
 }
 
+std::vector<Socket> createSockets(std::vector<Server> &sl)
+{
+	std::vector<Socket> sc;
+
+	for (std::vector<Server>::iterator i = sl.begin(); i != sl.end(); ++i)
+	{
+		std::vector<Socket>::iterator j;
+		for (j = sc.begin(); j != sc.end(); ++j)
+		{
+			if (j->getPort() == i->getPort())
+			{
+				std::cout << "Same port!\n";
+				if (i->getServerName().empty())
+				{
+					if (j->defaultServer != NULL)
+					{
+						std::cerr << "Multiple servers have the same port\n";
+						exit(1);
+					}
+					j->defaultServer = new Server(*i);
+				} else
+				{
+					for (std::vector<Server>::iterator k =
+							 j->serverList.begin();
+						 k != j->serverList.end(); ++k)
+					{
+						if (k->getServerName() == i->getServerName())
+						{
+							std::cerr << "Multiple servers have the same "
+										 "server_name and the same port\n";
+							exit(1);
+						}
+					}
+					j->serverList.push_back(*i);
+				}
+				break;
+			}
+		}
+		if (j == sc.end()) sc.push_back(Socket(*i));
+	}
+
+	for (std::vector<Socket>::iterator i = sc.begin(); i != sc.end(); ++i)
+	{
+		if (i->defaultServer == NULL)
+		{
+			std::cerr << "Each port need a default server\n";
+			exit(1);
+		}
+	}
+
+	return sc;
+}
 
 int main(int argc, char **argv)
 {
-	
+
 	if (argc != 2) exit(EXIT_FAILURE);
 	std::vector<Server> serverList = parse_config_file(argv[1]);
 
-	loop(serverList);
-//	static Server sv = serverList[0];
-//	sv.createSocket();
-//	sv.launch();
-	//std::string	hello = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n<!DOCTYPE html>\r\n<html><head><title>Webserv</title>\r\n<style>body { background-color: #FFFF00}</style></head>\r\n<body><center><h1>Hello World!</h1><br></center></body></html>\r\n";
-	/*Socket a();
-	a.binding();
-	a.listening(10);
-	Server	e(a);
-	e.launch(); */
+	std::vector<Socket> socketList = createSockets(serverList);
+	loop(socketList);
 	return 0;
 }

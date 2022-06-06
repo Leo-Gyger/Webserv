@@ -1,23 +1,24 @@
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
+#include "Server.hpp"
+#include <arpa/inet.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
 #include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <string.h>
+#include <poll.h>
+
 #include <sys/socket.h>
 #include <unistd.h>
+#include <vector>
 
 class Socket
 {
 public:
-	explicit Socket(int p,const std::string&	addr);
+	explicit Socket(const Server& sv);
 
 	~Socket();
 
@@ -32,18 +33,25 @@ public:
 	void setPort(int p);
 	int getPort() const;
 
-	void setServerFd(int s);
 	int getServerFd() const;
 
+	void launch();
+
+	std::vector<Server> serverList;
+	Server *defaultServer;
 
 	struct sockaddr_in address;
 	unsigned int addrlen;
 
+
 private:
-	int	epfd;
+	int epfd;
 	int port;
-	int server_fd;
 	int response_fd;
+	int server_fd;
+	int fd;
+
+	std::string readSocket() const;
 };
 
 #endif
