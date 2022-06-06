@@ -5,6 +5,7 @@
 #include <vector>
 std::map<int, Socket *> Server::smap;
 Server::Server() : port(), fd(), bodySize() {}
+std::vector<std::string> Server::sn_list;
 void npolling(struct pollfd *fds, int size)
 {
 	int status;
@@ -59,6 +60,8 @@ void Server::launch()
 	std::string buff = readSocket();
 	std::cout << buff << std::endl;
 	Request req(buff, this->serverName, this->port);
+	if (this->serverName != "" && req.getServerName() != this->serverName)
+		return ;
 	Response r(getRoutes(), req, this->bodySize);
 	ans = r.getResponse().toString();
 	std::cout << "ans "	<< ans << std::endl;
@@ -85,11 +88,13 @@ int Server::getFd() const { return (this->s->getServerFd()); }
 
 void Server::createSocket(const std::string &addr)
 {
-	static std::vector<std::string> sn_list;
 	if (smap.count(this->port) == 0)
 	{
 		smap.insert(std::make_pair(this->port, new Socket (this->port, addr)));
 		sn_list.push_back(this->serverName);
+		s = smap[this->port];
+		this->s->binding();
+		return;
 	}
 	else 
 	{
@@ -103,7 +108,6 @@ void Server::createSocket(const std::string &addr)
 		}
 	}
 	s = smap[this->port];
-	this->s->binding();
 }
 void Server::listen() { this->s->listening(10); }
 

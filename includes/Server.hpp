@@ -39,6 +39,7 @@ private:
 	class Socket *s;
 	std::vector<Route> routesList;
 	static std::map<int,Socket *> smap;
+	static std::vector<std::string> sn_list;
 	std::string readSocket() const;
 };
 

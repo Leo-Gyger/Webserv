@@ -46,6 +46,17 @@ void Request::fill(const std::string &header, const std::string &svName,
 		this->authorization = header.substr(i, header.find("\r\n", i) - i);
 	}
 
+	i = header.find("Host: ");
+	if (i != std::string::npos)
+	{
+		i += std::string("Host: ").length();
+		std::string hostname = header.substr(i, header.find("\r\n", i) - i);
+		std::cout << "Host name = " << hostname << std::endl;
+		i = hostname.find(":");
+		if (i != std::string::npos)
+			std::cout << hostname.erase(i) << std::endl;
+		this->serverName = hostname;
+	}
 	i = header.find("User-Agent: ");
 	if (i != std::string::npos)
 	{
