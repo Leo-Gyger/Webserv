@@ -50,7 +50,6 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	if (this->r.getUrl().size() == 1) temp += '/';
 	temp += this->filename.substr(this->r.getUrl().size());
 	this->filename = temp;
-	std::cout << "FILENAME: " << this->filename << std::endl;
 	if (isDirectory(this->filename.c_str()))
 	{
 		if (!r.getDefaultFile().empty())
@@ -146,7 +145,6 @@ void Response::redirection(const std::string &location,
 	this->response.setProtocol("HTTP/1.1");
 	this->response.setMethod(createStatusLine(301));
 	this->response.setDate(Response::Date());
-	std::cout << "GETURL, redirection: " << this->r.getUrl() << std::endl;
 	req = route + location;
 	if (route.size() == 1) req = location;
 	this->response.setLocation(req);
@@ -157,7 +155,6 @@ void Response::put_method(const Request &req, int &status)
 	std::ofstream file;
 
 	std::ifstream tfile(filename.c_str());
-	std::cout << "PUT BODY: " << this->filename << std::endl;
 	if (!tfile)
 	{
 		status = 201;
@@ -327,13 +324,6 @@ void Response::callCGI(const Request &req, const int &bodySize)
 	if (pipe(fd) == -1) exit(EXIT_FAILURE);
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
-
-	std::cout << "ROUTE NAME: "
-			  << this->r.getRoute() +
-					 req.getRoute().substr(this->r.getUrl().length(),
-										   std::string::npos)
-			  << std::endl;
-
 
 	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return;
 

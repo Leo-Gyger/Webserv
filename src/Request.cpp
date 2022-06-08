@@ -50,7 +50,6 @@ void Request::fill(const std::string &header,
 	{
 		i += std::string("Host: ").length();
 		std::string hostname = header.substr(i, header.find("\r\n", i) - i);
-		std::cout << "Host name = " << hostname << std::endl;
 		size_t j = hostname.find(':');
 		if (j != std::string::npos)
 			hostname.erase(j);
