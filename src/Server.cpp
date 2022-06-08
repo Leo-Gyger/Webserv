@@ -15,18 +15,14 @@ void Server::launch(const Request &req, int fd) const
 
 	Response r(getRoutes(), req, this->bodySize);
 	std::string ans = r.getResponse().toString();
-	std::cout << "ans " << ans << std::endl;
 	if (send(fd, ans.c_str(), ans.size(), 0) <= 0)
 	{
-		std::cout << "send failed" << std::endl;
 		return;
 	}
 
 	if (req.getMethod() != "HEAD")
 	{
 		body = r.getResponse().getBody();
-		std::cout << "Send value: " << send(fd, &body[0], body.size(), 0)
-				  << '\n';
 	}
 	close(fd);
 }

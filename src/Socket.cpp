@@ -3,7 +3,6 @@
 Socket::Socket(const Server &sv)
 	: serverList(), address(), port(sv.getPort()), response_fd()
 {
-	std::cout << "Socket constructor" << std::endl;
 	int val = 1;
 	serverList.push_back(sv);
 	this->address.sin_family = AF_INET;
@@ -42,7 +41,6 @@ Socket::~Socket()
 {
 	if (this->server_fd != -1 && this->server_fd != 0) close(this->server_fd);
 
-	std::cout << "Socket destructed" << std::endl;
 }
 
 Socket &Socket::operator=(const Socket &obj)
@@ -60,7 +58,6 @@ int Socket::getPort() const { return (this->port); }
 
 void Socket::launch()
 {
-	std::cout << "Launched socket!" << std::endl;
 	std::string te;
 
 	this->fd =
@@ -69,7 +66,6 @@ void Socket::launch()
 	if (this->fd == -1) return;
 
 	std::string buff = readSocket();
-	std::cout << buff << std::endl;
 
 	Request req(buff, this->port);
 
@@ -82,7 +78,6 @@ void Socket::launch()
 			return;
 		}
 	}
-	std::cout << "Called default route: " << req.getServerName() << std::endl;
 	defaultServer.launch(req, this->fd);
 }
 

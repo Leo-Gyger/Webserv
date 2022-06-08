@@ -46,7 +46,6 @@ std::vector<Socket *> createSockets(std::vector<Server> &sl)
 		{
 			if ((*j)->getPort() == i->getPort())
 			{
-				std::cout << "Same port!\n";
 				if (i->getServerName().empty())
 				{
 					if ((*j)->defaultServer.getPort() != 0)
