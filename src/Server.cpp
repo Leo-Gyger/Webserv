@@ -8,11 +8,6 @@
 
 Server::Server() : port(), bodySize() {}
 
-void leave(int sig)
-{
-	(void) sig;
-	std::exit(1);
-}
 
 void Server::launch(const Request &req, int fd) const
 {

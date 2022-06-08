@@ -75,7 +75,11 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 
 			if (pipe(fd) == -1) return;
 			child = fork();
-			if (child == -1) exit(EXIT_FAILURE); // todo: do not exit if fork fail --> do the same in cgi
+			if (child == -1)
+			{
+				std::cout << "Fork failed... exiting now.\n";
+				exit(EXIT_FAILURE); // todo: do not exit if fork fail --> do the same in cgi
+			}
 			if (child == 0)
 			{
 				close(fd[0]);
@@ -324,7 +328,12 @@ void Response::callCGI(const Request &req, const int &bodySize)
 	buffer.reserve(bodySize);
 	std::map<std::string, std::string> meta_var = Response::buildCGIEnv(req);
 
-	if (pipe(fd) == -1) exit(EXIT_FAILURE);
+	if (pipe(fd) == -1)
+	{
+		std::cerr << "pipe failed on cgi";
+		return ;
+		// todo: 404?
+	}
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
 

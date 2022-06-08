@@ -91,7 +91,11 @@ std::vector<Socket *> createSockets(std::vector<Server> &sl)
 int main(int argc, char **argv)
 {
 
-	if (argc != 2) exit(EXIT_FAILURE);
+	if (argc != 2)
+	{
+		std::cerr << "Usage: ./webserv [filename]\n";
+		exit(EXIT_FAILURE);
+	}
 	std::vector<Server> serverList = parse_config_file(argv[1]);
 
 	std::vector<Socket *> socketList = createSockets(serverList);

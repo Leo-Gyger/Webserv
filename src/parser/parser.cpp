@@ -205,7 +205,11 @@ std::vector<Server> parse_config_file(const char *filename)
 
 	std::vector<Server> serverList;
 
-	if (!f.file->is_open()) exit(EXIT_FAILURE);
+	if (!f.file->is_open())
+	{
+		std::cerr << "Could not open config file.\n";
+		exit(EXIT_FAILURE);
+	}
 	if (get_server_directive(f))
 		parse_error(f, "could not find server directive");
 	serverList.push_back(parse_server(f));

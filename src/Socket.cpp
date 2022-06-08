@@ -97,23 +97,14 @@ void npolling(struct pollfd *fds, int size)
 
 std::string Socket::readSocket() const
 {
-	std::string te;
-	struct pollfd fds;
-	fds.fd = this->fd;
-	fds.events = POLLIN;
+	struct pollfd fds = {fd, POLLIN, 0};
+	char buf[3000];
+
 	npolling(&fds, 1);
-	char *buf = new char[3000];
-	if (!buf) { std::exit(1); }
-	for (int in = 0; in != 3000; in++) buf[in] = 0;
-	int size = recv(this->fd, buf, 3000, 0);
+
+	ssize_t size = recv(this->fd, buf, 3000, 0);
 	if (size <= 0)
-	{
-		delete[] buf;
 		return (std::string());
-	}
-	te.resize(size);
-	te = buf;
-	delete[] buf;
-	return (te);
+	return (std::string(buf));
 }
 int Socket::getServerFd() const { return server_fd; }
