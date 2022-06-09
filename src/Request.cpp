@@ -86,6 +86,13 @@ void Request::fill(const std::string &header,
 	}
 }
 
+bool	is_valid(void) const
+{
+	if (this->contentLength.empty() || this->contentType.empty() || this->authorization.empty() || this->route.empty())
+		return false;
+	return true;
+}
+
 void Request::fillHeader(const std::string &header)
 {
 	size_t loc = header.find("\r\n\r\n") + 4;

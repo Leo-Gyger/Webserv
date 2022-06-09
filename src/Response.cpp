@@ -26,6 +26,7 @@ int isDirectory(const char *path)
 std::string find_error_page(int status) {
 	switch (status)
 	{
+		case 400: return "errorPages/400.html";
 		case 404: return "errorPages/404.html";
 		case 405: return "errorPages/405.html";
 		case 413: return "errorPages/413.html";
@@ -44,7 +45,10 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	std::string temp;
 
 	std::sort(tmp.begin(), tmp.end(), mySort);
-	this->filename = req.getRoute();
+	if (!rq.is_valid())
+		status = 400;
+	else
+		this->filename = req.getRoute();
 	if (filename.empty()) status = 404;
 	else
 		status = findRoute(tmp, methods);
