@@ -7,8 +7,8 @@
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 bool mySort(const Route &A, const Route &B)
 {
@@ -23,6 +23,16 @@ int isDirectory(const char *path)
 	return S_ISDIR(statbuf.st_mode);
 }
 
+std::string find_error_page(int status) {
+	switch (status)
+	{
+		case 404: return "errorPages/404.html";
+		case 405: return "errorPages/405.html";
+		case 413: return "errorPages/413.html";
+		case 500: return "errorPages/500.html";
+		default: return "";
+	}
+}
 
 Response::Response(const std::vector<Route> &route, const Request &req,
 				   const int &bodySize)
@@ -66,7 +76,8 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			argv.push_back((char *) ".");
 			argv.push_back((char *) this->filename.c_str());
 			argv.push_back(NULL);
-			std::cout << "URL:" << "." << '\n';
+			std::cout << "URL:"
+					  << "." << '\n';
 			std::cout << "URL:" << r.getRoute() << '\n';
 
 			int fd[2];
@@ -77,7 +88,8 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			if (child == -1)
 			{
 				std::cout << "Fork failed... exiting now.\n";
-				exit(EXIT_FAILURE); // todo: do not exit if fork fail --> do the same in cgi
+				status = 500;
+				goto build_response;
 			}
 			if (child == 0)
 			{
@@ -109,7 +121,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			filename = "errorPages/404.html";
 			goto build_response;
 		}
-		return ;
+		return;
 	}
 	if (methods == PUT)
 	{
@@ -122,16 +134,18 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	}
 	if (r.getCGI())
 	{
-		this->callCGI(req, bodySize);
-		return;
+		status = this->callCGI(req, bodySize);
+		if (status == 200)
+			return;
+		goto build_response;
 	}
 	if (!is_valid(filename))
-	{
 		status = 404;
-		filename = "errorPages/404.html";
-	}
-	if (status == 413) { filename = "errorPages/413.html"; }
 build_response:
+	if (status != 200)
+	{
+		filename = find_error_page(status);
+	}
 	form_body(filename);
 
 	this->response.setProtocol("HTTP/1.1");
@@ -139,6 +153,7 @@ build_response:
 	this->response.setDate(Response::Date());
 	this->response.setContentType(findType(filename));
 }
+
 
 void Response::redirection(const std::string &location,
 						   const std::string &route)
@@ -216,7 +231,6 @@ int Response::findRoute(std::vector<Route> &route, int method)
 		it++;
 	}
 
-	// todo: we probably need to move this to its own function
 	std::string allowed;
 	if (allowedMethods & GET) allowed += "GET";
 	if (allowedMethods & POST)
@@ -266,6 +280,7 @@ std::string Response::createStatusLine(int code)
 	SLmap[201] = "201 Created";
 	SLmap[301] = "301 Moved Permanently";
 	SLmap[502] = "502 Bad Gateway";
+	SLmap[500] = "500 Internal Server Error";
 	SLmap[413] = "413 Request Entity Too Large";
 	it = SLmap.find(code);
 	if (it == SLmap.end()) return (SLmap[404]);
@@ -274,14 +289,16 @@ std::string Response::createStatusLine(int code)
 
 void Response::form_body(const std::string &path)
 {
-	// todo: segfault if path is empty
-	if (path.empty()) return;
 	std::ifstream file(path.c_str());
 	std::streampos size;
 
-	file.seekg(0, std::ios::end);
-	size = file.tellg();
-	file.seekg(0, std::ios::beg);
+	if (file.fail()) size = 0;
+	else
+	{
+		file.seekg(0, std::ios::end);
+		size = file.tellg();
+		file.seekg(0, std::ios::beg);
+	}
 	std::vector<unsigned char> body(size);
 
 	file.read((char *) &body[0], size);
@@ -289,13 +306,12 @@ void Response::form_body(const std::string &path)
 	this->response.setContentLength(ft_itos(size));
 }
 
-std::string Response::findType(std::string req)
+std::string Response::findType(const std::string &req)
 {
 	std::map<std::string, std::string> extension;
 	std::map<std::string, std::string>::iterator it;
 	std::string ret;
 
-	// todo: segfault if path is empty
 	if (req.empty()) return (std::string());
 
 	extension[".jpg"] = "image/jpeg";
@@ -318,7 +334,7 @@ std::string Response::findType(std::string req)
 	return (ret);
 }
 
-void Response::callCGI(const Request &req, const int &bodySize)
+int Response::callCGI(const Request &req, const int &bodySize)
 {
 	int fd[2];
 	std::string buffer;
@@ -328,18 +344,21 @@ void Response::callCGI(const Request &req, const int &bodySize)
 	if (pipe(fd) == -1)
 	{
 		std::cerr << "pipe failed on cgi";
-		return ;
-		// todo: 404?
+		return 500;
 	}
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
 
-	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return;
+	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize))
+		return 500;
 
 	int status;
 	wait(&status);
 
-	if (!status) this->response.fillHeader(buffer);
+	if (status)
+		return 500;
+	this->response.fillHeader(buffer);
+	return (200);
 }
 
 std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)
@@ -350,19 +369,14 @@ std::map<std::string, std::string> Response::buildCGIEnv(const Request &req)
 	meta_var["CONTENT_LENGTH"] = req.getContentLength();
 	meta_var["CONTENT_TYPE"] = req.getContentType();
 	meta_var["GATEWAY_INTERFACE"] = "CGI/1.1";
-	meta_var["PATH_INFO"] = "";      // todo
-	meta_var["PATH_TRANSLATED"] = "";// todo
+	meta_var["PATH_INFO"] = req.getRoute();
+	meta_var["PATH_TRANSLATED"] = filename;
 	meta_var["QUERY_STRING"] = req.getQueryString();
-	meta_var["REMOTE_ADDR"] = ""; // todo
-	meta_var["REMOTE_HOST"] = ""; // todo
-	meta_var["REMOTE_IDENT"] = "";// todo
-	meta_var["REMOTE_USER"] = ""; // todo
+	meta_var["REMOTE_HOST"] = req.getServerName();
 	meta_var["REQUEST_METHOD"] = req.getMethod();
-	meta_var["SCRIPT_NAME"] = "";// todo
 	meta_var["SERVER_NAME"] = req.getServerName();
 	meta_var["SERVER_PORT"] = req.getServerPort();
 	meta_var["SERVER_PROTOCOL"] = "HTTP/1.1";
-	meta_var["SERVER_SOFTWARE"] = "";// todo
 	meta_var["QUERY_STRING"] = req.getQueryString();
 
 	return (meta_var);
@@ -398,4 +412,4 @@ Response &Response::operator=(const Response &t)
 	return (*this);
 }
 
-Response::~Response() { std::cout << "destructed" << std::endl; }
+Response::~Response() {}

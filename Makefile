@@ -45,11 +45,11 @@ INC_FLAGS += $(addprefix -I,$(INC_DIRS))
 CXXFLAGS += -Wall -Wextra -Werror -Wshadow
 CXXFLAGS += -std=c++98 -pedantic
 #CXXFLAGS += -flto=auto
-CXXFLAGS += -march=native
-CXXFLAGS += -O3
-#CXXFLAGS += -g3
+#CXXFLAGS += -march=native
+#CXXFLAGS += -O3
+CXXFLAGS += -g3
 CXXFLAGS += -fdiagnostics-color
-#CXXFLAGS += -fsanitize=address
+CXXFLAGS += -fsanitize=address
 
 all:
 	@$(MAKE) -j$(NPROC) $(NAME)

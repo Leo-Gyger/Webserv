@@ -26,7 +26,9 @@ void Server::launch(const Request &req, int fd) const
 	close(fd);
 }
 
-Server::~Server() { std::cout << "Server destructed" << std::endl; }
+Server::~Server() {
+//	std::cout << "Server destructed" << std::endl;
+}
 
 void Server::setPort(const int &p) { this->port = p; }
 int Server::getPort() const { return (this->port); }

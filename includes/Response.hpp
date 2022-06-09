@@ -21,9 +21,9 @@ public:
 
 	Request &getResponse();
 
-	void callCGI(const Request &, const int &);
+	int callCGI(const Request &, const int &);
 
-	static std::map<std::string, std::string> buildCGIEnv(const Request &);
+	std::map<std::string, std::string> buildCGIEnv(const Request &);
 
 	static std::string Date();
 private:
@@ -34,12 +34,12 @@ private:
 	std::string redirection();
 	static std::string createStatusLine(int);
 	void form_body(const std::string &);
-	static std::string findType(std::string);
+	static std::string findType(const std::string&);
 	void	put_method(const Request&, int&);
 	void redirection(const std::string &, const std::string &);
 	static std::string createFname(const std::string &, bool &);
 	int findRoute(std::vector<Route> &route, int method);
-	bool is_valid(const std::string &);
+	static bool is_valid(const std::string &);
 };
 std::ostream &operator<<(std::ostream &, const Response &);
 
