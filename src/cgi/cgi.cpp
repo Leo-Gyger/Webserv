@@ -19,9 +19,7 @@ std::string get_gci_executable(const std::string &filepath)
 {
 	if (!filepath.compare(filepath.length() - 3, 3, ".py")) return ("python3");
 	if (!filepath.compare(filepath.length() - 3, 3, ".js")) return ("node");
-
-	std::cerr << "Unrecognized file extension";
-	exit(EXIT_FAILURE);
+	return ("sh");
 }
 
 int execute_cgi(const std::string &filepath, int in[2],
@@ -44,10 +42,21 @@ int execute_cgi(const std::string &filepath, int in[2],
 		if (dup2(in[0], STDIN_FILENO) == -1) exit(EXIT_FAILURE);
 		std::vector<char *> argv;
 		argv.push_back(NULL);
-		if (execvp(filepath.c_str(), &argv[0]) == -1)
+		if (exec == "sh")
 		{
-			std::cerr << "Error launching cgi: " << filepath << std::endl;
-			exit(127);
+			if (execvp(filepath.c_str(), &argv[0]) == -1)
+			{
+				std::cerr << "Error launching cgi: " << filepath << std::endl;
+				exit(127);
+			}
+		} else
+		{
+			if (execlp(exec.c_str(), exec.c_str(), filepath.c_str(),
+					   &argv[0]) == -1)
+			{
+				std::cerr << "Error launching cgi: " << filepath << std::endl;
+				exit(127);
+			}
 		}
 	}
 	close(fd[1]);
@@ -56,7 +65,8 @@ int execute_cgi(const std::string &filepath, int in[2],
 }
 
 int get_gci(std::string &buffer, const std::string &filepath, int in[2],
-			const std::map<std::string, std::string> &meta_var, const int &bodySize)
+			const std::map<std::string, std::string> &meta_var,
+			const int &bodySize)
 {
 	int fd;
 	char *body = new char[bodySize]();

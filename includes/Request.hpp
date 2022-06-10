@@ -53,7 +53,7 @@ public:
 	void setDate(const std::string &);
 	void setLocation(const std::string &);
 	void setConnection(const std::string &);
-	bool is_valid(void) const;
+	bool is_valid() const;
 private:
 	std::string method;
 	std::string allow;

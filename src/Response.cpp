@@ -18,20 +18,26 @@ bool mySort(const Route &A, const Route &B)
 int isDirectory(const char *path)
 {
 	struct stat statbuf = {};
-	std::cout << path << std::endl;
 	if (stat(path, &statbuf) != 0) return 0;
 	return S_ISDIR(statbuf.st_mode);
 }
 
-std::string find_error_page(int status) {
+std::string find_error_page(int status)
+{
 	switch (status)
 	{
-		case 400: return "errorPages/400.html";
-		case 404: return "errorPages/404.html";
-		case 405: return "errorPages/405.html";
-		case 413: return "errorPages/413.html";
-		case 500: return "errorPages/500.html";
-		default: return "";
+		case 400:
+			return "errorPages/400.html";
+		case 404:
+			return "errorPages/404.html";
+		case 405:
+			return "errorPages/405.html";
+		case 413:
+			return "errorPages/413.html";
+		case 500:
+			return "errorPages/500.html";
+		default:
+			return "";
 	}
 }
 
@@ -45,8 +51,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	std::string temp;
 
 	std::sort(tmp.begin(), tmp.end(), mySort);
-	if (!rq.is_valid())
-		status = 400;
+	if (!req.is_valid()) status = 400;
 	else
 		this->filename = req.getRoute();
 	if (filename.empty()) status = 404;
@@ -80,9 +85,6 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			argv.push_back((char *) ".");
 			argv.push_back((char *) this->filename.c_str());
 			argv.push_back(NULL);
-			std::cout << "URL:"
-					  << "." << '\n';
-			std::cout << "URL:" << r.getRoute() << '\n';
 
 			int fd[2];
 			pid_t child;
@@ -91,7 +93,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			child = fork();
 			if (child == -1)
 			{
-				std::cout << "Fork failed... exiting now.\n";
+				std::cerr << "Fork failed... exiting now.\n";
 				status = 500;
 				goto build_response;
 			}
@@ -139,17 +141,12 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	if (r.getCGI())
 	{
 		status = this->callCGI(req, bodySize);
-		if (status == 200)
-			return;
+		if (status == 200) return;
 		goto build_response;
 	}
-	if (!is_valid(filename))
-		status = 404;
+	if (!is_valid(filename)) status = 404;
 build_response:
-	if (status != 200)
-	{
-		filename = find_error_page(status);
-	}
+	if (status != 200) { filename = find_error_page(status); }
 	form_body(filename);
 
 	this->response.setProtocol("HTTP/1.1");
@@ -353,14 +350,12 @@ int Response::callCGI(const Request &req, const int &bodySize)
 	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
 
-	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize))
-		return 500;
+	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return 500;
 
 	int status;
 	wait(&status);
 
-	if (status)
-		return 500;
+	if (status) return 500;
 	this->response.fillHeader(buffer);
 	return (200);
 }

@@ -86,7 +86,7 @@ void Request::fill(const std::string &header,
 	}
 }
 
-bool	is_valid(void) const
+bool	Request::is_valid() const
 {
 	if (this->contentLength.empty() || this->contentType.empty() || this->authorization.empty() || this->route.empty())
 		return false;

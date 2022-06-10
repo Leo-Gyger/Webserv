@@ -1,7 +1,6 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "parser_utils.hpp"
-#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
@@ -15,8 +14,7 @@ void Server::launch(const Request &req, int fd) const
 
 	Response r(getRoutes(), req, this->bodySize);
 	std::string ans = r.getResponse().toString();
-	if (send(fd, ans.c_str(), ans.size(), 0) <= 0)
-		return;
+	if (send(fd, ans.c_str(), ans.size(), 0) <= 0) return;
 
 	if (req.getMethod() != "HEAD")
 	{
@@ -26,9 +24,7 @@ void Server::launch(const Request &req, int fd) const
 	close(fd);
 }
 
-Server::~Server() {
-//	std::cout << "Server destructed" << std::endl;
-}
+Server::~Server() {}
 
 void Server::setPort(const int &p) { this->port = p; }
 int Server::getPort() const { return (this->port); }

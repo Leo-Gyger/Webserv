@@ -9,14 +9,14 @@ void polling(std::vector<struct pollfd> &fds, size_t size)
 	do {
 		status = poll(&fds[0], size, 1);
 	} while (status == 0 && fds[0].events != fds[0].revents);
-	//	std::cout << status << std::endl;
 }
 
 int loop(std::vector<Socket *> &sl)
 {
 	int l = 0;
 	std::vector<struct pollfd> fds(sl.size());
-	for (std::vector<Socket *>::iterator j = sl.begin(); j != sl.end(); ++j, ++l)
+	for (std::vector<Socket *>::iterator j = sl.begin(); j != sl.end();
+		 ++j, ++l)
 	{
 		(*j)->listening(10);
 		fds[l].fd = (*sl[l]).getServerFd();
@@ -28,10 +28,7 @@ int loop(std::vector<Socket *> &sl)
 	{
 		polling(fds, sl.size());
 		for (size_t i = 0; i != sl.size(); ++i)
-		{
-			//			std::cout << "revents: " << (fds[i].revents) << std::endl;
 			if (fds[i].revents & POLLIN) (*sl[i]).launch();
-		}
 	}
 }
 
@@ -99,7 +96,8 @@ int main(int argc, char **argv)
 
 	std::vector<Socket *> socketList = createSockets(serverList);
 	loop(socketList);
-	for (std::vector<Socket *>::iterator i = socketList.begin(); i != socketList.end();)
+	for (std::vector<Socket *>::iterator i = socketList.begin();
+		 i != socketList.end();)
 	{
 		delete *i;
 		i = socketList.begin();
