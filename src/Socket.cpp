@@ -1,10 +1,13 @@
 #include "../includes/Socket.hpp"
 
 Socket::Socket(const Server &sv)
-	: serverList(), address(), port(sv.getPort()), response_fd()
+	: serverList(), defaultServer(), address(), port(sv.getPort()), response_fd()
 {
 	int val = 1;
-	serverList.push_back(sv);
+	if (sv.getServerName().empty())
+		defaultServer = sv;
+	else
+		serverList.push_back(sv);
 	this->address.sin_family = AF_INET;
 	this->address.sin_addr.s_addr = htonl(INADDR_ANY);
 	this->address.sin_port = htons(port);

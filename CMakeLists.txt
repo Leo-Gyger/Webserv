@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(webserv)
+set(CMAKE_CXX_COMPILER "g++-11")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_STANDARD 98)

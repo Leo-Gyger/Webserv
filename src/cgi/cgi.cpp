@@ -52,7 +52,7 @@ int execute_cgi(const std::string &filepath, int in[2],
 		} else
 		{
 			if (execlp(exec.c_str(), exec.c_str(), filepath.c_str(),
-					   &argv[0]) == -1)
+					   NULL) == -1)
 			{
 				std::cerr << "Error launching cgi: " << filepath << std::endl;
 				exit(127);
