@@ -105,4 +105,5 @@ std::string Socket::readSocket() const
 		return (std::string());
 	return (std::string(buf));
 }
+
 int Socket::getServerFd() const { return server_fd; }

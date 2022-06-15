@@ -57,14 +57,10 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	if (filename.empty()) status = 404;
 	else
 		status = findRoute(tmp, methods);
-	if (status == 404) filename = "errorPages/404.html";
-	if (status == 405) filename = "errorPages/405.html";
 	if (status != 200) goto build_response;
 
 	if (ft_stoi(req.getContentLength()) > this->r.getMaxBodySize())
-	{
 		status = 413;
-	}
 	temp = this->r.getRoute();
 	if (this->r.getUrl().size() == 1) temp += '/';
 	temp += this->filename.substr(this->r.getUrl().size());
@@ -124,7 +120,6 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		} else
 		{
 			status = 404;
-			filename = "errorPages/404.html";
 			goto build_response;
 		}
 		return;
@@ -145,6 +140,7 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		goto build_response;
 	}
 	if (!is_valid(filename)) status = 404;
+
 build_response:
 	if (status != 200) { filename = find_error_page(status); }
 	form_body(filename);
