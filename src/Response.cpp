@@ -239,21 +239,11 @@ int Response::findRoute(std::vector<Route> &route, int method)
 {
 	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
 	{
-		if (it->getUrl() != "/")
-		{
-			if (this->filename.find(it->getUrl() + '/') == 0 &&
-				this->filename.length() >= it->getUrl().length())
-				it++;
-			else
-				it = route.erase(it);
-		} else
-		{
-			if (this->filename.find(it->getUrl()) == 0 &&
-				this->filename.length() >= it->getUrl().length())
-				it++;
-			else
-				it = route.erase(it);
-		}
+		if (this->filename.find(it->getUrl()) == 0 &&
+			this->filename.length() >= it->getUrl().length())
+			it++;
+		else
+			it = route.erase(it);
 	}
 
 	if (route.empty()) return (404);
