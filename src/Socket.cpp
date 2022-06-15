@@ -36,7 +36,12 @@ void Socket::binding()
 
 void Socket::listening(int bl) const
 {
-	listen(this->server_fd, bl);
+	ssize_t i = listen(this->server_fd, bl);
+	if (i == -1)
+	{
+		std::cerr << "Server could not listen on port " << port << std::endl;
+		std::exit(1);
+	}
 	std::cout << "Server is listening on port " << this->port << std::endl;
 }
 
@@ -69,6 +74,8 @@ void Socket::launch()
 	if (this->fd == -1) return;
 
 	std::string buff = readSocket();
+	if (buff.empty())
+		return ;
 
 	Request req(buff, this->port);
 
@@ -101,8 +108,16 @@ std::string Socket::readSocket() const
 	npolling(&fds, 1);
 
 	ssize_t size = recv(this->fd, buf, 3000, 0);
-	if (size <= 0)
+	if (size == 0)
+	{
+		close(this->fd);
 		return (std::string());
+	}
+	if (size == -1)
+	{
+		close(this->fd);
+		return (std::string());
+	}
 	return (std::string(buf));
 }
 

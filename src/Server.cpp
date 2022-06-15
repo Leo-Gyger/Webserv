@@ -14,12 +14,32 @@ void Server::launch(const Request &req, int fd) const
 
 	Response r(getRoutes(), req, this->bodySize);
 	std::string ans = r.getResponse().toString();
-	if (send(fd, ans.c_str(), ans.size(), 0) <= 0) return;
+	ssize_t i = send(fd, ans.c_str(), ans.size(), 0);
+	if (i == 0)
+	{
+		close(fd);
+		return;
+	}
+	if (i == -1)
+	{
+		close(fd);
+		return;
+	}
 
 	if (req.getMethod() != "HEAD")
 	{
 		body = r.getResponse().getBody();
-		send(fd, &body[0], body.size(), 0);
+		i = send(fd, &body[0], body.size(), 0);
+		if (i == 0)
+		{
+			close(fd);
+			return;
+		}
+		if (i == -1)
+		{
+			close(fd);
+			return;
+		}
 	}
 	close(fd);
 }

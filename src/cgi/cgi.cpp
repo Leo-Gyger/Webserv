@@ -61,6 +61,7 @@ int execute_cgi(const std::string &filepath, int in[2],
 	}
 	close(fd[1]);
 	close(in[0]);
+	close(in[1]);
 	return (fd[0]);
 }
 
@@ -73,8 +74,18 @@ int get_gci(std::string &buffer, const std::string &filepath, int in[2],
 
 	fd = execute_cgi(filepath, in, meta_var);
 	if (fd == -1) return (0);
-	while (read(fd, body, bodySize) > 0) buffer += body;
+	ssize_t i;
+	while ((i = read(fd, body, bodySize)) != 0)
+	{
+		if (i == -1)
+		{
+			close(fd);
+			return (0);
+		}
+		buffer += body;
+	}
 
+	close(fd);
 	delete[] body;
 	return (1);
 }

@@ -28,6 +28,8 @@ std::string find_error_page(int status)
 	{
 		case 400:
 			return "errorPages/400.html";
+		case 403:
+			return "errorPages/403.html";
 		case 404:
 			return "errorPages/404.html";
 		case 405:
@@ -67,10 +69,16 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	this->filename = temp;
 	if (isDirectory(this->filename.c_str()))
 	{
-		if (!r.getDefaultFile().empty())
+		if (!r.getDefaultFile().empty() &&
+			is_valid(filename + r.getDefaultFile().substr(1)))
 			this->redirection(r.getDefaultFile(), req.getRoute());
 		else if (r.getBrowse())
 		{
+			if (methods != GET)
+			{
+				status = 405;
+				goto build_response;
+			}
 			std::vector<char *> argv;
 			argv.push_back((char *) "tree");
 			argv.push_back((char *) "-L");
@@ -107,11 +115,21 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 			if (fd[0] == -1)
 			{
 				status = 500;
-				return;
+				goto build_response;
 			}
 			char *body = new char[bodySize]();
-			while (read(fd[0], body, bodySize) > 0)
+			ssize_t i;
+			while ((i = read(fd[0], body, bodySize)) != 0)
+			{
+				if (i == -1)
+				{
+					close(fd[0]);
+					status = 500;
+					goto build_response;
+				}
 				this->response.appendBody(body);
+			}
+			close(fd[0]);
 			status = 200;
 			this->response.setProtocol("HTTP/1.1");
 			this->response.setMethod(createStatusLine(status));
@@ -129,6 +147,14 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 		put_method(req, status);
 		this->response.setProtocol("HTTP/1.1");
 		status = 201;
+		this->response.setMethod(createStatusLine(status));
+		this->response.setDate(Response::Date());
+		return;
+	}
+	if (methods == DELETE)
+	{
+		delete_method(status);
+		this->response.setProtocol("HTTP/1.1");
 		this->response.setMethod(createStatusLine(status));
 		this->response.setDate(Response::Date());
 		return;
@@ -166,6 +192,13 @@ void Response::redirection(const std::string &location,
 	this->response.setLocation(req);
 	this->response.setConnection("close");
 }
+
+void Response::delete_method(int &status)
+{
+	status = 200;
+	if (remove(this->filename.c_str())) { status = 403; }
+}
+
 void Response::put_method(const Request &req, int &status)
 {
 	std::ofstream file;
@@ -206,12 +239,21 @@ int Response::findRoute(std::vector<Route> &route, int method)
 {
 	for (std::vector<Route>::iterator it = route.begin(); it != route.end();)
 	{
-
-		if (this->filename.find(it->getUrl()) == 0 &&
-			this->filename.length() >= it->getUrl().length())
-			it++;
-		else
-			it = route.erase(it);
+		if (it->getUrl() != "/")
+		{
+			if (this->filename.find(it->getUrl() + '/') == 0 &&
+				this->filename.length() >= it->getUrl().length())
+				it++;
+			else
+				it = route.erase(it);
+		} else
+		{
+			if (this->filename.find(it->getUrl()) == 0 &&
+				this->filename.length() >= it->getUrl().length())
+				it++;
+			else
+				it = route.erase(it);
+		}
 	}
 
 	if (route.empty()) return (404);
@@ -343,10 +385,28 @@ int Response::callCGI(const Request &req, const int &bodySize)
 		std::cerr << "pipe failed on cgi";
 		return 500;
 	}
-	write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
+	ssize_t i =
+		write(fd[1], &req.getBody()[0], ft_stoi(req.getContentLength()));
 	close(fd[1]);
 
-	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize)) return 500;
+	if (i == 0)
+	{
+		close(fd[0]);
+		return 500;
+	}
+	if (i == -1)
+	{
+		close(fd[0]);
+		return 500;
+	}
+
+	if (!get_gci(buffer, this->filename, fd, meta_var, bodySize))
+	{
+		close(fd[0]);
+		return 500;
+	}
+
+	close(fd[0]);
 
 	int status;
 	wait(&status);
