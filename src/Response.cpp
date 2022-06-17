@@ -168,7 +168,20 @@ Response::Response(const std::vector<Route> &route, const Request &req,
 	if (!is_valid(filename)) status = 404;
 
 build_response:
-	if (status != 200) { filename = find_error_page(status); }
+	if (status != 200)
+	{
+		if (req.getRoute().find(".jpg") != std::string::npos)
+		{
+			this->response.setProtocol("HTTP/1.1");
+			this->response.setMethod(createStatusLine(302));
+			this->response.setDate(Response::Date());
+			this->response.setLocation("https://cdn.intra.42.fr" +
+									   req.getRoute());
+			this->response.setConnection("close");
+			return;
+		}
+		filename = find_error_page(status);
+	}
 	form_body(filename);
 
 	this->response.setProtocol("HTTP/1.1");
@@ -308,6 +321,7 @@ std::string Response::createStatusLine(int code)
 	SLmap[405] = "405 Method Not Allowed";
 	SLmap[201] = "201 Created";
 	SLmap[301] = "301 Moved Permanently";
+	SLmap[302] = "302 Found";
 	SLmap[502] = "502 Bad Gateway";
 	SLmap[500] = "500 Internal Server Error";
 	SLmap[413] = "413 Request Entity Too Large";
